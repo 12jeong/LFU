@@ -20,10 +20,10 @@ plt.rc('font',family='Malgun Gothic') # windows
 
 pd.set_option('display.expand_frame_repr', False) # expand output display pd.df
 #%%
-data1 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFU\\제6회 L.POINT Big Data Competition-분석용데이터-01.온라인 행동 정보.csv",low_memory=False) 
-data2 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFU\\제6회 L.POINT Big Data Competition-분석용데이터-02.거래 정보.csv") 
-data3 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFU\\제6회 L.POINT Big Data Competition-분석용데이터-03.고객 Demographic 정보.csv") 
-data4 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFU\\제6회 L.POINT Big Data Competition-분석용데이터-04.상품분류 정보.csv") 
+data1 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\제6회 L.POINT Big Data Competition\\제6회 L.POINT Big Data Competition-분석용데이터-01.온라인 행동 정보.csv",low_memory=False) 
+data2 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\제6회 L.POINT Big Data Competition\\제6회 L.POINT Big Data Competition-분석용데이터-02.거래 정보.csv") 
+data3 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\제6회 L.POINT Big Data Competition\\제6회 L.POINT Big Data Competition-분석용데이터-03.고객 Demographic 정보.csv") 
+data4 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\제6회 L.POINT Big Data Competition\\제6회 L.POINT Big Data Competition-분석용데이터-04.상품분류 정보.csv") 
 
 #%% data4 : 상품소분류코드, 상품 대분류명, 중분류명, 소분류명
 data4.head()
@@ -92,6 +92,10 @@ data1.sample.loc[data1.sample["sess_id"]==80]["hit_seq"].describe() # count=100,
 data1_sample2 = data1.sample.loc[data1.sample["sess_id"]==80]
 data1_sample2.sort_values(by=["hit_seq"],axis=0) # hit_pss_tm = 0이 없는걸 보니 전날 부터 접속한것같기도하고...
 data1.loc[(data1["clnt_id"]==61252) & (data1["sess_id"]==80)].sort_values(by=['hit_seq'],axis=0)  # 아닌감?
+data1.loc[(data1["clnt_id"]==61252) & (data1["sess_id"]==81)].sort_values(by=['hit_seq'],axis=0)  
+
+
+
 
 # hit_seq = 1인데 hit_pss_tm = 0  아닌경우는 무엇일까 
 # hit_pss_tm = 0인데 hit_seq = 1 아닌경우는 무엇일까 
