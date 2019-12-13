@@ -1,5 +1,5 @@
-#%% import
 %reset -f
+#%% import
 import os
 os.getcwd()
 from os import chdir
@@ -22,19 +22,15 @@ plt.rc('font',family='Malgun Gothic') # windows
 pd.set_option('display.expand_frame_repr', False) # expand output display pd.df
 
 #%% Load raw data
-data1 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\제6회 L.POINT Big Data Competition\\제6회 L.POINT Big Data Competition-분석용데이터-01.온라인 행동 정보.csv",low_memory=False) 
-data2 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\제6회 L.POINT Big Data Competition\\제6회 L.POINT Big Data Competition-분석용데이터-02.거래 정보.csv") 
-data3 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\제6회 L.POINT Big Data Competition\\제6회 L.POINT Big Data Competition-분석용데이터-03.고객 Demographic 정보.csv") 
-data4 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\제6회 L.POINT Big Data Competition\\제6회 L.POINT Big Data Competition-분석용데이터-04.상품분류 정보.csv") 
+data1 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\datasets\\제6회 L.POINT Big Data Competition-분석용데이터-01.온라인 행동 정보.csv",low_memory=False) 
+data2 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\datasets\\제6회 L.POINT Big Data Competition-분석용데이터-02.거래 정보.csv") 
+data3 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\datasets\\제6회 L.POINT Big Data Competition-분석용데이터-03.고객 Demographic 정보.csv") 
+data4 = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\datasets\\제6회 L.POINT Big Data Competition-분석용데이터-04.상품분류 정보.csv") 
 
 #%%
 #data1['clnt_id'] = data1['clnt_id'].astype(object)
 #data1['trans_id'] = data1['trans_id'].astype(object)
 #data1['sess_id'] = data1['sess_id'].astype(object)
-
-data1.head()
-data1["id"] = data1.index
-data1["hit_pss_tm"] = data1["hit_pss_tm"]/(60*1000)
 
 # action_type = 0인데 kwd 없는 경우는 없음.
 sum(pd.isnull(data1[data1.action_type == 0].sech_kwd)) 
@@ -58,9 +54,20 @@ data1[(data1['sess_dt']==20190930) & (data1['sess_id']==271)][['clnt_id','sess_i
 
 
 #%% 거래경험에 따른 고객 분류 
-trans_T_key = data1[(np.isnan(data1.trans_id) == False) & (data1.action_type == 6 )][['clnt_id','sess_id','sess_dt']] # trans_id 가 존재하고 구매를 함
+data1.head()
+data1["id"] = data1.index
+data1["hit_pss_tm"] = data1["hit_pss_tm"]/(60*1000)
+
+
+trans_T_key = data1[ (data1.action_type == 6 )][['clnt_id','sess_id','sess_dt']].drop_duplicates() # trans_id 가 존재하고 구매를 함
 data1_trans_T = pd.merge(data1, trans_T_key, how='inner')
-data1_trans_F = data1[~data1['id'].isin(data1_trans_T['id'])]
+data1_trans_F = data1[~ data1['id'].isin(data1_trans_T['id'])] 
+data1.shape[0]
+data1_trans_T.shape[0]+data1_trans_F.shape[0] # 다를 수는 있는데..왜 다르지?
+
+data1_trans_T[data1_trans_T[' == 7]
+
+
 
 # 접속 시간에 따른 차이
 hit_pss_tm_T = data1_trans_T['hit_pss_tm'] # 구매까지 걸린 접속시간
@@ -73,21 +80,17 @@ plt.hist(hit_pss_tm_F)
 plt.hist(hit_pss_tm_F[hit_pss_tm_F< 100]) # 분
 plt.boxplot(hit_pss_tm_F, showfliers=False)
 
-# 검색키워드가 있는지 차이
-pd.isnull(data1_trans_T['sech_kwd']).sum() / data1_trans_T.shape[0] # 구매를 한 사람중에 키워드가 있는 비율
-d1_tmp5 = data1_trans_F.groupby(['clnt_id','sess_id','sess_dt'],as_index=False).nth(0) 
-pd.isnull(d1_tmp5['sech_kwd']).sum() / d1_tmp5.shape[0] # 구매를 안 한 사람중에 키워드가 있는 비율 # 이거 다시해야함
-
 # 범주데이터
 T_by_biz = data1_trans_T.groupby('biz_unit')['id'].agg('count')
 T_by_trfc = data1_trans_T.groupby('trfc_src')['id'].agg('count')
 T_by_dvc = data1_trans_T.groupby('dvc_ctg_nm')['id'].agg('count')
 
 label = T_by_biz.index; index = np.arange(len(label)) ;plt.bar(index, T_by_biz) ; plt.xticks(index, label, fontsize=15)
-label = T_by_trfc.index; index = np.arange(len(label)) ;plt.bar(index, T_by_trfc) ; plt.xticks(index, label, fontsize=15)
+label = T_by_trfc.index; index = np.arange(len(label)) ;plt.bar(index, T_by_trfc) ; plt.xticks(index, label, fontsize=15,rotation=45)
 label = T_by_dvc.index; index = np.arange(len(label)) ;plt.bar(index, T_by_dvc) ; plt.xticks(index, label, fontsize=15)
 
-d1_tmp_F = data1_trans_F.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt'],as_index=False)
+d1_tmp_F = data1_trans_F.sort_values(['clnt_id','sess_id','sess_dt',
+                                      'hit_seq']).groupby(['clnt_id','sess_id','sess_dt'],as_index=False)
 F_for_category = d1_tmp_F.nth(-1)
 
 F_by_biz = F_for_category.groupby('biz_unit')['id'].agg('count')
@@ -95,10 +98,22 @@ F_by_trfc= F_for_category.groupby('trfc_src')['id'].agg('count')
 F_by_dvc = F_for_category.groupby('dvc_ctg_nm')['id'].agg('count')
 
 label = F_by_biz.index; index = np.arange(len(label)) ;plt.bar(index, F_by_biz) ; plt.xticks(index, label, fontsize=15)
-label = F_by_trfc.index; index = np.arange(len(label)) ;plt.bar(index, F_by_trfc) ; plt.xticks(index, label, fontsize=15)
+label = F_by_trfc.index; index = np.arange(len(label)) ;plt.bar(index, F_by_trfc) ; plt.xticks(index, label, fontsize=15,rotation=45)
 label = F_by_dvc.index; index = np.arange(len(label)) ;plt.bar(index, F_by_dvc) ; plt.xticks(index, label, fontsize=15)
 
+# 검색키워드가 있는지 차이
+d1_tmp5 = data1_trans_T.sort_values(['clnt_id','sess_id','sess_dt','action_type']).groupby(['clnt_id','sess_id','sess_dt'],as_index=False).nth(0)
+pd.isnull(d1_tmp5['sech_kwd']).sum() / d1_tmp5.shape[0] # 구매를 한 사람중에 키워드가 있는 비율
+#notnull
+d1_tmp6 = data1_trans_F.sort_values(['clnt_id','sess_id','sess_dt','action_type']).groupby(['clnt_id','sess_id','sess_dt'],as_index=False).nth(0)
+pd.isnull(d1_tmp6['sech_kwd']).sum() / d1_tmp6.shape[0] # 구매를 안 한 사람중에 키워드가 있는 비율
 
+
+#%% 구매 전까지 어떤 행동을 하는가?
+# 각 행동에 시간을 얼마나 사용하였는지
+
+data1_trans_T.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt']).nth(-1)['hit_seq']
+trans_T_action = data1_trans_T.groupby(['clnt_id','sess_id','sess_dt','action_type'])['hit_seq'].agg('count')
 
 
 
