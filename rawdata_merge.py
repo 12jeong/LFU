@@ -86,10 +86,12 @@ df_buy_tmp2 = df_buy_tmp.groupby(['clnt_id','sess_id','sess_dt','trans_id'])['id
 tmp_key = df_buy_tmp2[df_buy_tmp2.trans_count==True].reset_index()[['clnt_id','sess_id','sess_dt']]
 df_buy_tmp3  = pd.merge(df_buy_tmp, tmp_key , how='inner').drop_duplicates()
 df_buy = df_buy_tmp3
+
+# action_type == 6이 없는 고객의 데이터 (정말 구경만 하다 가는 사람) [송현이가 만들어줌]
 df_nobuy = online_bh[~ online_bh['id'].isin(df_buy['id'])] 
 
-df_buy.shape[0] + df_nobuy.shape[0] 
-online_bh.shape[0]
+
+
 
 # sum(df_buy_tmp.groupby(['clnt_id','sess_id','sess_dt','trans_id'])['trans_id'].agg('count') == 2) # 구매를 하고 바로 취소를 한 경우?
 # sum(df_buy_tmp.groupby(['clnt_id','sess_dt','trans_id'])['trans_id'].agg('count') == 2) # 구매를 하고 같은날 취소를 한 경우 
@@ -113,3 +115,9 @@ online_bh[ (online_bh.action_type == 7 ) & (np.isnan(online_bh.trans_id) == Fals
 # 구매 고객의 나이, 성별 파악
 # 반응률이 높은 교차판매전략을 기획하기 위해 고객의 구매 패턴을 분석
 # 가격 선호도, 시즌 선호도, 구매추세 패턴, 상품별 구매 금액, 구매순서, 구매 상품 분석
+
+
+#특정 행동 기준으로 전환된 컨텐츠를 분석
+# 예) 검색으로 유입된 고객이 많이 조회, 구매하는 상품 또는 컨텐츠의 전환분석
+# 예) 이메일로 유입된 고객이 조회하는 이벤트, 기획전, 컨텐츠 등의 전환분석
+# 예) 기획전을 조회한 고객이 구매하는 상품, 컨텐츠 등의 전환분석
