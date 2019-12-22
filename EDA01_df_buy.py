@@ -75,7 +75,7 @@ df_action_n7 = df_action_n7[df_action_n7['action_type']!=7]
 online_bh=pd.concat([df_action7_nd, df_action_n7]) 
 
 
-#%%  nobuy 정의 : 동일 session내에서 action_type = 6(구매 완료) 없는 사람 
+#%% nobuy 정의 : 동일 session내에서 action_type = 6(구매 완료) 없는 사람 
 df_buy =online_bh.copy()
 df_buy = df_buy[df_buy['action_type']==6]
 
@@ -84,9 +84,20 @@ buy_session_key['buy']=1
 buy_session_key
 
 temp = online_bh.copy()
-temp=temp.merge(buy_session_key, how='left')
+temp=temp.merge(buy_session_key, how='left').drop_duplicates() # 중복행 제거해야함
 
 temp.head()
 
 df_nobuy =temp[temp['buy'].isna()]
 df_buy = temp[temp['buy'].notnull()]
+
+df_nobuy.shape[0] + df_buy.shape[0] - online_bh.shape[0] # 행 개수 확인
+
+#%% buy 정의 : 같은 session 내에서 구매후 환불을 하지 않은 사람 (노이즈 제거) - 추후 환불 고객 분석 가능
+
+buy_tmp = df_buy.copy()
+buy_tmp2 = buy_tmp.groupby(['clnt_id','sess_id','sess_dt','trans_id'])['id'].agg(trans_count='count') < 2
+no_cancel_key = buy_tmp2[ buy_tmp2['trans_count'].notna()].reset_index()[['clnt_id','sess_id','sess_dt']]
+buy_tmp   = buy_tmp.merge(no_cancel_key, how='inner').drop_duplicates() 
+sum(buy_tmp.groupby(['clnt_id','sess_id','sess_dt','trans_id'])['id'].agg('count') > 1) # 이 경우는 같은세션에서 다른 상품을 구매한 것
+df_buy = buy_tmp
