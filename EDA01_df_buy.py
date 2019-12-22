@@ -74,25 +74,19 @@ df_action_n7 =online_bh.copy()
 df_action_n7 = df_action_n7[df_action_n7['action_type']!=7]
 online_bh=pd.concat([df_action7_nd, df_action_n7]) 
 
-#%% online_bh 에서 구매를 한 사람의 정보
-trans_id_key_tmp = online_bh[ (online_bh.action_type == 6 )][['clnt_id','sess_id','sess_dt','trans_id']]
-trans_id_key = trans_id_key_tmp[trans_id_key_tmp['trans_id'].isin(trans_info.trans_id)] # trans_info 에 trans_id 가 있는 정보만 활용
-df_buy_tmp = pd.merge(online_bh, trans_id_key.drop(['trans_id'],axis=1), how='inner').drop_duplicates()
-#df_buy_tmp2 = df_buy_tmp.groupby(['clnt_id','sess_id','sess_dt','trans_id'])['id'].agg(trans_count='count') > 1 # 같은 trans_id가 한개 이상이면 구매 후 환불한것
-#tmp_key = df_buy_tmp2[df_buy_tmp2.trans_count==True].reset_index()[['clnt_id','sess_id','sess_dt','trans_id']]
-#tmp_df1  = pd.merge(online_bh, tmp_key , how='inner').sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt'])
-#tmp_df1.head()
-df_buy_tmp2 = df_buy_tmp.groupby(['clnt_id','sess_id','sess_dt','trans_id'])['id'].agg(trans_count='count') < 2  # 구매만 한 데이터
-tmp_key = df_buy_tmp2[df_buy_tmp2.trans_count==True].reset_index()[['clnt_id','sess_id','sess_dt']]
-df_buy_tmp3  = pd.merge(df_buy_tmp, tmp_key , how='inner').drop_duplicates()
-df_buy = df_buy_tmp3
-df_nobuy = online_bh[~ online_bh['id'].isin(df_buy['id'])] 
 
-df_buy.shape[0] + df_nobuy.shape[0] 
-online_bh.shape[0]
+#%%  nobuy 정의 : 동일 session내에서 action_type = 6(구매 완료) 없는 사람 
+df_buy =online_bh.copy()
+df_buy = df_buy[df_buy['action_type']==6]
 
-# sum(df_buy_tmp.groupby(['clnt_id','sess_id','sess_dt','trans_id'])['trans_id'].agg('count') == 2) # 구매를 하고 바로 취소를 한 경우?
-# sum(df_buy_tmp.groupby(['clnt_id','sess_dt','trans_id'])['trans_id'].agg('count') == 2) # 구매를 하고 같은날 취소를 한 경우 
-# sum(df_buy_tmp.groupby(['clnt_id','trans_id'])['trans_id'].agg('count') == 2) # 구매를 하고 다른날 취소를 한 경우 
+buy_session_key = df_buy[['clnt_id','sess_id','sess_dt']]
+buy_session_key['buy']=1
+buy_session_key
 
+temp = online_bh.copy()
+temp=temp.merge(buy_session_key, how='left')
 
+temp.head()
+
+df_nobuy =temp[temp['buy'].isna()]
+df_buy = temp[temp['buy'].notnull()]
