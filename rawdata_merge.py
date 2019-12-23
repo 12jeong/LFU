@@ -43,6 +43,7 @@ for dtidx in range(len(df_right)):
 
 #%% 2,3,4 merge
 prod_info_uk=raw_prod_info.copy()
+prod_info_uk['pd_c'] = prod_info_uk['pd_c'].astype(str).str.zfill(4)
 prod_info_uk.loc[1668]=['unknown','unknown','unknown','unknown']
 
 trans_info = raw_trans_info.copy()
@@ -50,9 +51,8 @@ df_right = [raw_demo_info,prod_info_uk]
 key = ['clnt_id','pd_c']
 how = ['left','left']
 for dtidx in range(len(df_right)):
-    dt_temp = df_right[dtidx].copy()
+    dt_temp = df_right[dtidx].copy().drop_duplicates()
     trans_info = trans_info.merge(dt_temp, on=key[dtidx], how=how[dtidx])
-
 #%% data1 : online_bh 전처리 
 online_bh.head()
 online_bh["id"] = online_bh.index
