@@ -48,7 +48,7 @@ prod_info_uk.loc[1668]=['unknown','unknown','unknown','unknown']
 trans_info = raw_trans_info.copy()
 df_right = [raw_demo_info,prod_info_uk]
 key = ['clnt_id','pd_c']
-how = ['left','outer']
+how = ['left','left']
 for dtidx in range(len(df_right)):
     dt_temp = df_right[dtidx].copy()
     trans_info = trans_info.merge(dt_temp, on=key[dtidx], how=how[dtidx])
