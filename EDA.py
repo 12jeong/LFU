@@ -126,11 +126,16 @@ df_refund.shape[0]/online_bh.shape[0] # 0.018
 #=========================================================================
 # - trans_info : data 2 & 3 & 4
 
-trans_info.columns
+# trans_info.columns
+
+
 
 # - df_refund or refund_exp_clnt 
-# - key_word | df_buy, df_nobuy
-
+# - srch_kwd | df_buy, df_nobuy
+aa = df_buy[df_buy['action_type']==0 ]['sech_kwd']
+df_nobuy[['action_type','sech_kwd']]
+df_buy['sech_kwd']
+# - 파생 변수 만들기 <- 충성도
 
 
 
