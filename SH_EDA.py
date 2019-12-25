@@ -121,10 +121,17 @@ df_norefund =temp[temp['refund'].isna()]
 
 df_refund.shape[0]/online_bh.shape[0] # 0.018 
 
+
+df_refund.to_csv(pc+"Dropbox\\LFY\\datasets\\df_refund.csv", index=False)
+df_norefund.to_csv(pc+"Dropbox\\LFY\\datasets\\df_norefund.csv", index=False)
+trans_info.to_csv(pc+"Dropbox\\LFY\\datasets\\mg_trans_info.csv", index=False)
+online_bh.to_csv(pc+"Dropbox\\LFY\\datasets\\mg_online_bh.csv", index=False)
+
 #=========================================================================
 #%%  Segment : df_nobuy / df_buy / df_refund
 #=========================================================================
 # - trans_info : data 2 & 3 & 4
+
 
 # trans_info.columns
 

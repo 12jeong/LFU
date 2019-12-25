@@ -4,8 +4,12 @@
 import os
 os.getcwd()
 from os import chdir
-os.chdir('C:\\Users\\UOS\\Documents\\GITHUB\LFU')
-pdir = os.getcwd() ;print(pdir)
+pc12 = "C:\\Users\\UOS\\"
+pcsh = "C:\\Users\\user\\"
+# pcyt = ""
+pc = pcsh
+
+os.chdir(pc+'Documents\\GITHUB\LFU')
 
 # import sys
 import pandas as pd
@@ -25,8 +29,57 @@ plt.rc('font',family='Malgun Gothic') # windows
 pd.set_option('display.expand_frame_repr', False) 
 
 #%% Load raw data
-df_buy  = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\datasets\\df_buy.csv",index_col=0) 
-df_nobuy = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\datasets\\df_no_buy.csv",index_col=0) 
+raw_df_refund    = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\df_refund.csv") 
+raw_df_norefund  = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\df_norefund.csv") 
+raw_df_buy       = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\df_buy.csv",index_col=0) 
+raw_df_nobuy     = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\df_no_buy.csv",index_col=0) 
+raw_trans_info   = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\mg_trans_info.csv")
+raw_online_bh    = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\mg_online_bh.csv")
+
+
+df_refund   = raw_df_refund.copy()  
+df_norefund = raw_df_norefund.copy()  
+df_buy      = raw_df_buy.copy()  
+df_nobuy    = raw_df_nobuy.copy()
+trans_info  = raw_trans_info.copy()
+online_bh   = raw_online_bh.copy()
+
+#%% trans_bh - df_buy['action_type'] == 6 인 사람들의 id,time 정보로 trans_info 데이터 subset
+buy_action_key = df_buy[df_buy['action_type'] == 6][['clnt_id','trans_id','sess_dt','hit_tm']]
+buy_action_key['obh'] = 1
+
+temp = trans_info.copy()
+trans_info = pd.merge(temp,buy_action_key, how='left',
+                         left_on=['clnt_id','trans_id','de_dt','de_tm'],
+                         right_on=['clnt_id','trans_id','sess_dt','hit_tm']).drop_duplicates()
+
+col_order = ['obh', 'clnt_id', 'trans_id', 'sess_dt','de_dt', 'hit_tm','de_tm',
+             'trans_seq', 'biz_unit', 'pd_c', 'buy_am', 'buy_ct', 'clnt_gender', 'clnt_age', 'clac_nm1','clac_nm2', 'clac_nm3']
+trans_info=trans_info[col_order]
+
+trans_bh = trans_info[trans_info['obh']==1]
+trans_only = trans_info[trans_info['obh'].isna()]
+trans_bh['sess_dt'] = trans_bh['sess_dt'].astype(int)
+
+trans_bh = trans_bh.sort_values(['obh', 'clnt_id', 'trans_id', 'sess_dt', 'de_dt', 'hit_tm', 'de_tm','trans_seq'],axis=0) # 오름차순
+#sum(trans_bh['sess_dt'] != trans_bh['de_dt'])
+#sum(trans_bh['hit_tm'] != trans_bh['de_tm'])
+trans_bh = trans_bh.drop(['sess_dt','hit_tm'],axis=1)
+#%%  trans_bh
+# 구매일자, 구매 시간 : 'de_dt', 'de_tm', '
+
+# --- 층화
+#'업종 단위 : biz_unit',
+# 상품 코드 : 'pd_c', clac_nm1','clac_nm2', 'clac_nm3'
+# - muti '업종 별 상품 코드!! : biz_unit',
+# 인적 정보 : 'clnt_gender', 'clnt_age', 
+# - muti 성별별 나이 : 'clnt_gender', 'clnt_age'
+
+# ---- Y
+# 단순 빈도
+# 구매 순서  : trans_seq', -> 내역 내 구매 순서 -> 경로적인 의미 있을 수 있음 
+# 구매 금액, 수량 : buy_am', 'buy_ct', 
+
 
 #%% 접속 시간 차이
 hit_pss_tm_buy = df_buy.drop_duplicates(['clnt_id','sess_id','sess_dt','tot_sess_hr_v'])['tot_sess_hr_v']
