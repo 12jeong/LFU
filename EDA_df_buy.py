@@ -3,7 +3,8 @@
 import os
 os.getcwd()
 from os import chdir
-os.chdir('C:\\Users\\UOS\\Documents\\GITHUB\LFU')
+#os.chdir('C:\\Users\\UOS')
+os.chdir('C:\\Users\\MYCOM')
 pdir = os.getcwd() ;print(pdir)
 
 # import sys
@@ -24,8 +25,8 @@ plt.rc('font',family='Malgun Gothic') # windows
 pd.set_option('display.expand_frame_repr', False) 
 
 #%% Load raw data
-df_buy  = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\datasets\\df_buy.csv",index_col=0) 
-df_nobuy = pd.read_csv("C:\\Users\\UOS\\Dropbox\\LFY\\datasets\\df_no_buy.csv",index_col=0) 
+df_buy  = pd.read_csv(".\Dropbox\\LFY\\datasets\\df_buy.csv",index_col=0) 
+df_nobuy = pd.read_csv(".\Dropbox\\LFY\\datasets\\df_no_buy.csv",index_col=0) 
 
 #%% 접속 시간 차이
 hit_pss_tm_buy = df_buy.drop_duplicates(['clnt_id','sess_id','sess_dt','tot_sess_hr_v'])['tot_sess_hr_v']
@@ -276,6 +277,7 @@ label = tmp.index; index = np.arange(len(label)) ;plt.bar(index,tmp) ; plt.xtick
 #%% action_type 관계
 # 구매고객
 total_hit_seq = df_buy.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt']).nth(-1)['hit_seq'] # 마지막 행동
+pd.DataFrame(total_hit_seq.reset_index()['hit_seq']).boxplot(showfliers=False)
 count_hit_seq_tmp = df_buy.groupby(['clnt_id','sess_id','sess_dt','action_type'])['hit_seq'].agg('count')
 freq_hit_seq_tmp = count_hit_seq_tmp/total_hit_seq
 
@@ -286,6 +288,7 @@ label = count_hit_seq.index; index = np.arange(len(label)) ;plt.bar(index, count
 
 # 비구매고객
 total_hit_seq = df_nobuy.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt']).nth(-1)['hit_seq'] # 마지막 행동
+pd.DataFrame(total_hit_seq.reset_index()['hit_seq']).boxplot(showfliers=False)
 count_hit_seq_tmp = df_nobuy.groupby(['clnt_id','sess_id','sess_dt','action_type'])['hit_seq'].agg('count')
 freq_hit_seq_tmp = count_hit_seq_tmp/total_hit_seq
 
@@ -297,9 +300,11 @@ label = count_hit_seq.index; index = np.arange(len(label)) ;plt.bar(index, count
 
 
 
-#%% 1222 구매 전 행동들에 시간을 얼마나 사용하는가?
+#%% action_type에 소요된 시간
+
+# 구매고객
 df_buy['hit_diff']=df_buy.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt'])['hit_pss_tm'].diff(periods=-1)*-1
-#df_buy.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt']).head()
+# df_buy.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt'])['clnt_id','sess_id','sess_dt','hit_seq','hit_pss_tm','hit_diff'].head()
 hit_diff_tmp1 = df_buy.groupby(['clnt_id','sess_id','sess_dt','action_type'])['hit_diff'].agg('sum') # 세션마다 각 행동에 드는 시간의 합
 hit_diff = hit_diff_tmp1.reset_index().groupby(['action_type']).agg('mean')
 label = hit_diff.index; index = np.arange(len(label)) ;plt.bar(index, hit_diff.hit_diff) ; plt.xticks(index, label, fontsize=15)
@@ -308,6 +313,16 @@ df_buy['hit_diff_ratio'] = df_buy['hit_diff']/ df_buy['tot_sess_hr_v']
 hit_diff_ratio = df_buy.groupby(['action_type'])['hit_diff_ratio'].agg('mean')
 label = hit_diff_ratio.index; index = np.arange(len(label)) ;plt.bar(index, hit_diff_ratio) ; plt.xticks(index, label, fontsize=15)
 
+# 비구매고객
+df_nobuy['hit_diff']=df_nobuy.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt'])['hit_pss_tm'].diff(periods=-1)*-1
+#df_nobuy.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt']).head()
+hit_diff_tmp1 = df_nobuy.groupby(['clnt_id','sess_id','sess_dt','action_type'])['hit_diff'].agg('sum') # 세션마다 각 행동에 드는 시간의 합
+hit_diff = hit_diff_tmp1.reset_index().groupby(['action_type']).agg('mean')
+label = hit_diff.index; index = np.arange(len(label)) ;plt.bar(index, hit_diff.hit_diff) ; plt.xticks(index, label, fontsize=15)
+
+df_nobuy['hit_diff_ratio'] = df_nobuy['hit_diff']/ df_nobuy['tot_sess_hr_v'] 
+hit_diff_ratio = df_nobuy.groupby(['action_type'])['hit_diff_ratio'].agg('mean')
+label = hit_diff_ratio.index; index = np.arange(len(label)) ;plt.bar(index, hit_diff_ratio) ; plt.xticks(index, label, fontsize=15)
 
 
 
@@ -324,11 +339,6 @@ pd.isnull(d1_tmp5['sech_kwd']).sum() / d1_tmp5.shape[0] # 구매를 한 사람�
 d1_tmp6 = df_nobuy.sort_values(['clnt_id','sess_id','sess_dt','action_type']).groupby(['clnt_id','sess_id','sess_dt'],as_index=False).nth(0)
 pd.isnull(d1_tmp6['sech_kwd']).sum() / d1_tmp6.shape[0] # 구매를 안 한 사람중에 키워드가 있는 비율
 
-
-
-#%% 총 행동 수 
-hit_seq_buy = df_buy.drop_duplicates(['clnt_id','sess_id','sess_dt','tot_sess_hr_v'])['hit_seq']
-hit_seq_nobuy = df_nobuy.drop_duplicates(['clnt_id','sess_id','sess_dt','tot_sess_hr_v'])['hit_seq']
 
 
 #%% 1222 같은 session 내에서 검색을 한 상품을 구매할 확률은?
