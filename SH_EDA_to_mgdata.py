@@ -80,10 +80,12 @@ df_action_n7 = df_action_n7[df_action_n7['action_type']!=7]
 online_bh=pd.concat([df_action7_nd, df_action_n7]) 
 
 # astype == str
-#online_bh['clnt_id']=online_bh['clnt_id'].astype(str)
-#online_bh['sess_id']=online_bh['sess_id'].astype(str)
-#online_bh['trans_id'] =online_bh['trans_id'].astype(str)
-online_bh['sess_dt'] = online_bh[['sess_dt']].applymap(str).applymap(lambda s: "{}-{}-{}".format(s[0:4],s[4:6],s[6:],))
+#online_bh['clnt_id'].sort_values()
+#online_bh['clnt_id']=online_bh['clnt_id'].astype('str')
+#online_bh['clnt_id'].sort_values()
+#online_bh['sess_id']=online_bh['sess_id'].astype('str')
+#online_bh['trans_id'] =online_bh['trans_id'].astype('str')
+online_bh['sess_dt'] = online_bh[['sess_dt']].applymap('str').applymap(lambda s: "{}-{}-{}".format(s[0:4],s[4:6],s[6:],))
 online_bh['sess_dt'] = pd.to_datetime(online_bh['sess_dt'])
 online_bh.sort_values(['clnt_id'])['clnt_id']
 #%% data2 : trans_info 전처리
@@ -165,6 +167,7 @@ temp=temp[col_order]
 temp = temp.sort_values(['clnt_id', 'sess_dt','sess_id', 'hit_seq','hit_tm'],axis=0) # 오름차순 int int int int object
 temp['trans_id'] = temp.groupby(['clnt_id','sess_dt','sess_id'])['trans_id'].bfill() # int int int 
 df_buy = temp
+
 #%% 저장
 online_bh = online_bh.sort_values(['clnt_id','sess_dt','sess_id','hit_seq'])
 trans_info = trans_info.sort_values(['clnt_id','de_dt','de_tm','trans_seq'])
