@@ -29,10 +29,10 @@ plt.rc('font',family='Malgun Gothic') # windows
 pd.set_option('display.expand_frame_repr', False) # expand output display pd.df
 
 #%% Load raw data
-raw_online_bh  = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\online_bh.csv")   #  3196362
-raw_trans_info = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\trans_info.csv") 
-raw_demo_info  = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\demo_info.csv") 
-raw_prod_info  = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\prod_info.csv") 
+raw_online_bh  = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\rawdata\\online_bh.csv")   #  3196362
+raw_trans_info = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\rawdata\\trans_info.csv") 
+raw_demo_info  = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\rawdata\\demo_info.csv") 
+raw_prod_info  = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\rawdata\\prod_info.csv") 
 
 #%% copy raw data
 online_bh = raw_online_bh.copy()
