@@ -177,6 +177,12 @@ trans_info.to_csv(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\trans_info.csv",index=
 df_buy.to_csv(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\df_buy.csv",index=False)
 df_nobuy.to_csv(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\df_nobuy.csv",index=False)
 
+# %% 불러오기
+online_bh  = pd.read_csv(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\online_bh.csv")
+trans_info = pd.read_csv(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\trans_info.csv")
+df_buy     = pd.read_csv(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\df_buy.csv")
+df_nobuy   = pd.read_csv(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\df_nobuy.csv")
+
 #%%  ppdata 모두 병합 - online_bh['action_type'] == 6인 행으로 구성된 데이터 셋 
 ppdata = df_buy[df_buy['action_type'] == 6][['action_type', 'clnt_id','sess_dt', 'sess_id','trans_id',  # 식별자 
                                               'hit_seq', 'hit_tm', 'hit_pss_tm', # 조회 정보                                                       
@@ -194,8 +200,13 @@ df_kwd['kwd_list'] = df_kwd['kwd_list'].apply(', '.join)
 
 df_kwd['kwd'] = 1 # kwd list 존재 유무 변수 - > nan : 구매를 위한 검색 존재 X
 kwd_ppdata = pd.merge(ppdata,df_kwd, how='left', on =['clnt_id', 'sess_dt', 'sess_id', 'trans_id']).drop_duplicates()
-#%%
-# 02. 분류 리스트 : df_clac['clac_nm1','clac_nm2','clac_nm3'] | 병합 -> mg_ppdata
+
+# unique_kwd : 키워드 unique 목록 저장
+unique_kwd = df_buy['sech_kwd'].unique()
+with open(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\unique_kwd.txt",'w', encoding='utf-8') as f:
+    for item in unique_kwd:
+        f.write("%s\n" % item)
+#%% 02. 분류 리스트 : df_clac['clac_nm1','clac_nm2','clac_nm3'] | 병합 -> mg_ppdata
 trans_info[['clnt_id', 'de_dt','trans_id']].drop_duplicates().shape #115110
 df_clac1 = trans_info.groupby(['clnt_id', 'de_dt','trans_id'])['clac_nm1'].apply(list).reset_index()
 df_clac2 = trans_info.groupby(['clnt_id', 'de_dt','trans_id'])['clac_nm2'].apply(list).reset_index()['clac_nm2']
@@ -206,13 +217,29 @@ df_clac['clac_nm1'] = df_clac['clac_nm1'].apply(', '.join)
 df_clac['clac_nm2'] = df_clac['clac_nm2'].apply(', '.join)
 df_clac['clac_nm3'] = df_clac['clac_nm3'].apply(lambda x: ', '.join(map(str, x))) # float가 대체 어디있어서 lambda로 map 먼저하고 apply
 
-# df_clac['trans_id'] = df_clac['trans_id'].astype('str')
-#%%
+# mg_ppdata : 병합 데이터
 df_clac['clac'] = 1 # clac list 존재 유무 변수 - > nan : 상품 분류 존재 X
-
 mg_ppdata = pd.merge(kwd_ppdata,df_clac, how='left',  #51297
                      left_on =['clnt_id', 'sess_dt','trans_id'], # int /str/float
                      right_on =['clnt_id', 'de_dt', 'trans_id']).drop_duplicates() # str/Timestamp/str
 mg_ppdata = mg_ppdata.drop(['de_dt'],axis=1)
 
 mg_ppdata.to_csv(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\mg_ppdata.csv",index=False)
+
+# -- clnc unique 목록
+unique_clnc1 = trans_info['clac_nm1'].unique()
+unique_clnc2 = trans_info['clac_nm2'].unique()
+unique_clnc3 = trans_info['clac_nm3'].unique()
+
+with open(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\unique_clnc1.txt",'w', encoding='utf-8') as f:
+    for item in unique_clnc1:
+        f.write("%s\n" % item)
+        
+with open(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\unique_clnc2.txt",'w', encoding='utf-8') as f:
+    for item in unique_clnc2:
+        f.write("%s\n" % item)
+        
+with open(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\unique_clnc3.txt",'w', encoding='utf-8') as f:
+    for item in unique_clnc3:
+        f.write("%s\n" % item)
+        
