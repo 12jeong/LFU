@@ -45,11 +45,11 @@ raw_prod_info  = pd.read_csv(".\Dropbox\\LFY\\datasets\\rawdata\\prod_info.csv")
 f = open(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\unique_kwd.txt",'rt', encoding='UTF8'); txtfile = f.read() ; f.close()
 unique_kwd = txtfile.strip().split('\n') ; unique_kwd = sorted(unique_kwd)
 f = open(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\unique_clnc1.txt",'rt', encoding='UTF8'); txtfile = f.read() ; f.close()
-unique_clnc1 = txtfile.strip().split('\n') ;unique_kwd = sorted(unique_clnc1)
+unique_clnc1 = txtfile.strip().split('\n') ;unique_clnc1 = sorted(unique_clnc1)
 f = open(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\unique_clnc2.txt",'rt', encoding='UTF8'); txtfile = f.read() ; f.close()
-unique_clnc2 = txtfile.strip().split('\n') ;unique_kwd = sorted(unique_clnc2)
+unique_clnc2 = txtfile.strip().split('\n') ;unique_clnc2 = sorted(unique_clnc2)
 f = open(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\unique_clnc3.txt",'rt', encoding='UTF8'); txtfile = f.read() ; f.close()
-unique_clnc3 = txtfile.strip().split('\n') ;unique_kwd = sorted(unique_clnc3)
+unique_clnc3 = txtfile.strip().split('\n') ;unique_clnc3 = sorted(unique_clnc3)
 
 #%% 문서 - 단어 행렬 만들기 <- ** [문서]상품 분류 & [단어]검색 리스트 
 # 해당 상품 분류를 구매한 고객은 어떤 단어를 검색했는지 
