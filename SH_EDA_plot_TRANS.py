@@ -103,7 +103,7 @@ raw_trans_bh = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\trans_bh.csv")
 # -- 구매 수량 == 0 인거 존재
 raw_trans_bh['buy_ct'].unique()
 raw_trans_bh[raw_trans_bh['buy_ct'] ==0]['biz_unit'].unique() # A03 뿐
-raw_trans_bh[raw_trans_bh['buy_ct']==500]['biz_unit'].uniq][[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[['ue() # A03 뿐
+raw_trans_bh[raw_trans_bh['buy_ct']==500]['biz_unit'].unique() # A03 뿐
 
 trans_bh = raw_trans_bh[~raw_trans_bh.buy_ct.isin([0,500])]
 

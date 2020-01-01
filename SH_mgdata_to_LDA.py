@@ -39,7 +39,7 @@ plt.rc('font',family='Malgun Gothic') # windows
 pd.set_option('display.expand_frame_repr', False) # expand output display pd.df
 
 #%% Load raw data
-mg_ppdata  = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\mg_ppdata.csv")   #  3196362
+mg_ppdata      = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\mg_ppdata.csv")   #  3196362
 raw_prod_info  = pd.read_csv(".\Dropbox\\LFY\\datasets\\rawdata\\prod_info.csv") 
 
 f = open(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\unique_kwd.txt",'rt', encoding='UTF8'); txtfile = f.read() ; f.close()
@@ -87,8 +87,6 @@ clac = mg_ppdata[clac_var]
 kwd = mg_ppdata[kwd_list]
 
 DTM_ck1 = pd.DataFrame(index=unique_clnc1,columns=unique_kwd)
-DTM_ck1
-
 DTM_ck2 = pd.DataFrame(index=unique_clnc2,columns=unique_kwd)
 DTM_ck3 = pd.DataFrame(index=unique_clnc3,columns=unique_kwd)
 
@@ -96,9 +94,6 @@ DTM_ck3 = pd.DataFrame(index=unique_clnc3,columns=unique_kwd)
 #%% non_buy / refund - 어케할지
 #%% online_bh 내 다른 변수들 사용
 #%% 추천시스템 구축
-
-mg_ppdata["clac_nm1"].str.split(",")[1][0]
-
 
 
 
