@@ -4,7 +4,7 @@ import os
 os.getcwd()
 from os import chdir
 #os.chdir('C:\\Users\\UOS\\Documents\\GITHUB\\LFU')
-os.chdir('C:\\Users\\MYCOM\\Documents\\GITHUB\\LFU')
+os.chdir('C:\\Users\\MYCOM')
 pdir = os.getcwd() ;print(pdir)
 
 # import sys
@@ -28,8 +28,8 @@ import shelve
 pd.set_option('display.expand_frame_repr', False) 
 
 #%% Load raw data
-df_buy  = pd.read_csv("C:\\Users\\MYCOM\\Dropbox\\LFY\\datasets\\df_buy.csv",index_col=0) 
-df_nobuy = pd.read_csv("C:\\Users\\MYCOM\\Dropbox\\LFY\\datasets\\df_no_buy.csv",index_col=0) 
+df_buy  = pd.read_csv("./Dropbox\\LFY\\datasets/ppdata\\df_buy.csv") 
+df_nobuy = pd.read_csv("./Dropbox\\LFY\\datasets/ppdata\\df_nobuy.csv") 
 
 
 #%% buy
@@ -74,7 +74,7 @@ df_if_tmp = df_if_tmp.merge(df10,on=['clnt_id','sess_id','sess_dt'], how='inner'
 
 #%% final table for customer information
 df_design_buy = pd.concat([df_buy_if, df_if_tmp], axis=0)
-df_design_buy.to_csv("C:\\Users\\MYCOM\\Dropbox\\LFY\\datasets\\df_design_buy.csv")
+df_design_buy.to_csv("C:\\Users\\MYCOM\\Dropbox\\LFY\\datasets/ppdata\\df_design_buy.csv")
 
 #%%
 df_design_buy = pd.read_csv("C:\\Users\\MYCOM\\Dropbox\\LFY\\datasets\\df_design_buy.csv",index_col=0)
@@ -101,6 +101,35 @@ from IPython.display import Image
 #os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
 
 dot_data = export_graphviz(buy_tree, out_file=None, class_names=["nobuy", "buy"],
+                           feature_names=list(X_with_dummies.columns) , impurity=False, filled=True)
+graph = pydotplus.graph_from_dot_data(dot_data)
+Image(graph.create_png())
+
+#%% A01
+X = df_design_buy[df_design_buy.biz_unit=="A01" ]
+X = X.drop(['sess_dt','sess_id','clnt_id','id','action_count1','action_count2','action_count3','action_count4','action_count5','action_count_6','action_count_7','action_time_6','action_time_7','biz_unit'],axis=1)
+X = X.dropna()
+y = X['buy']
+X = X.drop('buy',axis=1)
+#X = X[['tot_sess_hr_v']]
+X_with_dummies = pd.get_dummies(X,columns=['clnt_age','clnt_gender','dvc_ctg_nm','trfc_src'],drop_first=False)
+
+(X == 'unknown').sum()
+(y == 1).sum()
+(y == 0).sum()
+from sklearn import tree
+buy_tree = tree.DecisionTreeClassifier(criterion='entropy', max_depth=5, random_state=0)
+#buy_tree.fit(X_with_dummies, y)
+buy_tree.fit(X_with_dummies, y)
+
+from sklearn.tree import export_graphviz
+import pydotplus
+from IPython.display import Image
+
+#import os
+#os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
+
+dot_data = export_graphviz(buy_tree, out_file=None, class_names=['0', '1'],
                            feature_names=list(X_with_dummies.columns) , impurity=False, filled=True)
 graph = pydotplus.graph_from_dot_data(dot_data)
 Image(graph.create_png())
