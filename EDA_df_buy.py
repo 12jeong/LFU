@@ -3,8 +3,8 @@
 import os
 os.getcwd()
 from os import chdir
-#os.chdir('C:\\Users\\UOS')
-os.chdir('C:\\Users\\MYCOM')
+os.chdir('C:\\Users\\UOS')
+#os.chdir('C:\\Users\\MYCOM')
 pdir = os.getcwd() ;print(pdir)
 
 # import sys
@@ -25,8 +25,8 @@ plt.rc('font',family='Malgun Gothic') # windows
 pd.set_option('display.expand_frame_repr', False) 
 
 #%% Load raw data
-df_buy  = pd.read_csv(".\Dropbox\\LFY\\datasets\\df_buy.csv",index_col=0) 
-df_nobuy = pd.read_csv(".\Dropbox\\LFY\\datasets\\df_no_buy.csv",index_col=0) 
+df_buy  = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\df_buy.csv") 
+df_nobuy = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\df_nobuy.csv") 
 
 #%% 접속 시간 차이
 hit_pss_tm_buy = df_buy.drop_duplicates(['clnt_id','sess_id','sess_dt','tot_sess_hr_v'])['tot_sess_hr_v']
