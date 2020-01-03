@@ -88,7 +88,7 @@ def myplot(score,coeff,labels=None):
     plt.grid()
 
 myplot(x_new[:,0:2],np.transpose(pca.components_[0:2, :]))
-plt.show()
+plt.show(
 
 #%% A02
 df_design_buy.head()
@@ -204,6 +204,7 @@ plt.rcParams["figure.figsize"] = (20,15)
 s.unstack().plot.barh(stacked=True) ### 연령 비율로 군집화 할 수 없음? ex) 10대가 많이 사는 품목군 (대분류랑 다를듯)
 
 X= s.unstack(level=-1, fill_value=0)
+
 # In general, it's a good idea to scale the data prior to PCA.
 scaler = StandardScaler()
 scaler.fit(X)
@@ -383,7 +384,7 @@ association_rules(frequent, metric='confidence', min_threshold=0.5)
 
 
 dataset = trans_A02[trans_A02.clnt_gender=="M"].groupby(['clnt_id'])['clac_nm1'].apply(list).reset_index()
-pd_set = dataset.clac_nm1
+pd_set = dataset.clac_nm1                    
 t = TransactionEncoder()
 t_a = t.fit(pd_set).transform(pd_set)
 df = pd.DataFrame(t_a, columns = t.columns_)
