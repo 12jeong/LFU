@@ -3,8 +3,8 @@
 import os
 os.getcwd()
 from os import chdir
-os.chdir('C:\\Users\\UOS')
-#os.chdir('C:\\Users\\MYCOM')
+# os.chdir('C:\\Users\\UOS')
+os.chdir('C:\\Users\\MYCOM')
 pdir = os.getcwd() ;print(pdir)
 
 # import sys
