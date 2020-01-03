@@ -151,3 +151,62 @@ EDA_clac3_by_biz(biz_unit=biz_unit, clnt_age=50, clnt_gender="F")
 EDA_clac3_by_biz(biz_unit=biz_unit, clnt_age=50, clnt_gender="M")
 EDA_clac3_by_biz(biz_unit=biz_unit, clnt_age=60, clnt_gender="F")
 EDA_clac3_by_biz(biz_unit=biz_unit, clnt_age=60, clnt_gender="M")
+
+
+#%% 마트데이터 손님 군집화 (구매 상품-clac_nm2을 중심으로)
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+# 상품의 단가 구하기 = buy_am/buy_ct
+# trans_info['buy_am_unit'] = trans_info['buy_am']/trans_info['buy_ct']
+trans_info['buy_am_new'] = trans_info['buy_am']/trans_info['buy_ct']
+# 상품분류별로 표준화하기 
+# trans_info['buy_am_std'] = trans_info.groupby('clac_nm2')['buy_am_unit'].apply(lambda x: (x - x.mean()) / x.std())
+# 표준화 한 단가에 buy_ct 곱해서 구매지수? 만들기
+# trans_info['buy_am_new'] = trans_info.buy_am_std * trans_info.buy_ct
+# 마트데이터만 추출 
+df_mart_tmp = trans_info[(trans_info.biz_unit == "A03")|(trans_info.biz_unit == "B01")|(trans_info.biz_unit == "B02")]
+df_mart_tmp2 = df_mart_tmp[['clnt_id','clac_nm2','buy_am_new']].groupby(['clnt_id','clac_nm2'])['buy_am_new'].agg('sum')
+df_mart = df_mart_tmp2.unstack(level=-1, fill_value=0)
+
+X = df_mart
+X_clnt = df_mart.index
+X_clac = df_mart.columns
+
+# In general, it's a good idea to scale the data prior to PCA.
+scaler = StandardScaler()
+scaler.fit(X)
+X=scaler.transform(X)    
+pca = PCA()
+x_new = pca.fit_transform(X)
+pca.components_[0] # 1주성분
+pca.components_[1] # 2주성분
+
+pd.DataFrame([X_clac,pca.components_[0],pca.components_[1]]).transpose()
+plt.plot(np.cumsum(pca.explained_variance_ratio_))
+
+# kmeans
+kmeans = KMeans(n_clusters=10)
+kmeans.fit(X)
+y_kmeans = kmeans.predict(X)
+
+# plot PCA loading and loading in biplot
+y = y_kmeans
+def myplot(score,coeff,labels=None):
+    xs = score[:,0]
+    ys = score[:,1]
+    n = coeff.shape[0]
+    scalex = 1.0/(xs.max() - xs.min())
+    scaley = 1.0/(ys.max() - ys.min())
+    plt.scatter(xs * scalex,ys * scaley, c = y)
+    plt.xlim(-1,1)
+    plt.ylim(-1,1)
+    plt.xlabel("PC{}".format(1))
+    plt.ylabel("PC{}".format(2))
+    plt.grid()
+
+myplot(x_new[:,0:2],np.transpose(pca.components_[0:2, :]))
+plt.show()
+
+
