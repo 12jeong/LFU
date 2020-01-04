@@ -1,39 +1,37 @@
 %reset -f
-#%% import
+#%%
+# -- IMPORT PACKAGE
 import os
 os.getcwd()
 from os import chdir
-# os.chdir('C:\\Users\\UOS')
-os.chdir('C:\\Users\\MYCOM')
-pdir = os.getcwd() ;print(pdir)
-
-# import sys
 import pandas as pd
-import seaborn as sns # 시각화
+import seaborn as sns 
 import matplotlib.pyplot as plt
-# 그래프의 스타일을 지정
-plt.style.use('ggplot')
 import numpy as np
 import scipy as sp
 import sklearn
 import matplotlib as mpl
+
+# -- DIRECTORY
+pcsh = "C:\\Users\\user\\"
+pc = pcsh
+os.chdir(pcsh)
+pdir = os.getcwd() ; print(pdir) #os.chdir('C:\\Users\\UOS\\Documents\\GITHUB\LFU')
+# -- PLOT STYLE
+plt.style.use('ggplot') # 그래프의 스타일을 지정
 mpl.rcParams.update({'font.size':14})
 plt.rc('font',family='Malgun Gothic') # windows
 %matplotlib inline 
-import matplotlib.pyplot as plt
-
 #%% expand output display pd.df
 pd.set_option('display.expand_frame_repr', False) 
 
 #%% Load raw data
-df_buy  = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\df_buy.csv") 
-df_nobuy = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\df_nobuy.csv")
-online_bh = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\online_bh.csv")
-trans_info = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\trans_info.csv")
-df_design_buy = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\df_design_buy.csv",index_col=0)
-mg_ppdata = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\mg_ppdata.csv")
-
-
+df_buy  = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\df_buy.csv") 
+df_nobuy = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\df_nobuy.csv")
+online_bh = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\online_bh.csv")
+trans_info = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\trans_info.csv")
+df_design_buy = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\df_design_buy.csv",index_col=0)
+mg_ppdata = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\mg_ppdata.csv")
 #%%
 len(np.unique(trans_info[trans_info.biz_unit=="B03"].clac_nm1))
 len(np.unique(trans_info[trans_info.biz_unit=="B03"].clac_nm2))
@@ -170,6 +168,7 @@ df_mart_tmp = trans_info[(trans_info.biz_unit == "A03")|(trans_info.biz_unit == 
 df_mart_tmp2 = df_mart_tmp[['clnt_id','clac_nm2','buy_am_new']].groupby(['clnt_id','clac_nm2'])['buy_am_new'].agg('sum')
 df_mart = df_mart_tmp2.unstack(level=-1, fill_value=0)
 
+
 X = df_mart
 X_clnt = df_mart.index
 X_clac = df_mart.columns
@@ -209,4 +208,16 @@ def myplot(score,coeff,labels=None):
 myplot(x_new[:,0:2],np.transpose(pca.components_[0:2, :]))
 plt.show()
 
+# network by corrleation matrix
+import networkx as nx
+df_mart.columns.name=None # 다중인덱스 제거
 
+def NETcorr(dataframe,threshold):
+    corr = dataframe.corr()
+    links = corr.stack().reset_index()
+    links.columns = ['var1', 'var2','value']
+    links_filtered=links.loc[ (links['value'] >threshold) & (links['var1'] != links['var2']) ]
+    G=nx.from_pandas_edgelist(links_filtered, 'var1', 'var2')
+    nx.draw(G, with_labels=True, node_color='orange', node_size=50, edge_color='black', linewidths=1, font_size=10)
+
+NETcorr(df_mart,0.35)
