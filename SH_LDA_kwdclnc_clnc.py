@@ -57,9 +57,12 @@ with open(pc+'Dropbox\LFY\datasets\crawling\clnc2.pickle', 'rb') as f:
 with open(pc+'Dropbox\LFY\datasets\crawling\clnc3.pickle', 'rb') as f:
     clnc3 = pickle.load(f)
     
+online_bh      = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\rawdata\\online_bh.csv")     
+trans_info      = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\rawdata\\trans_info.csv")  
+    
 #%%
-lotte
-lotte_err
+lotte # kwd -> 대중소
+lotte_err # 검색 결과 안나오는거 
 prepro_dic
 clnc1
 clnc2
