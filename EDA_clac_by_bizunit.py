@@ -208,16 +208,30 @@ def myplot(score,coeff,labels=None):
 myplot(x_new[:,0:2],np.transpose(pca.components_[0:2, :]))
 plt.show()
 
+
 # network by corrleation matrix
 import networkx as nx
-df_mart.columns.name=None # 다중인덱스 제거
 
-def NETcorr(dataframe,threshold):
-    corr = dataframe.corr()
+def NETcorr(dataframe,BIZ_set,ID,CL,SCORE,threshold,title):
+    
+    df_temp = dataframe[dataframe.biz_unit.isin(BIZ_set)]
+    df_temp2 = df_temp[[ID,CL,SCORE]].groupby([ID,CL])[SCORE].agg('sum')
+    df_temp3 = df_temp2.unstack(level=-1, fill_value=0)
+
+    corr = df_temp3.corr()
+    corr.columns.name = None
     links = corr.stack().reset_index()
     links.columns = ['var1', 'var2','value']
     links_filtered=links.loc[ (links['value'] >threshold) & (links['var1'] != links['var2']) ]
     G=nx.from_pandas_edgelist(links_filtered, 'var1', 'var2')
     nx.draw(G, with_labels=True, node_color='orange', node_size=50, edge_color='black', linewidths=1, font_size=10)
 
-NETcorr(df_mart,0.35)
+    plt.title(title)
+    plt.gcf().canvas.set_window_title("")
+    plt.show()
+
+threshold = 0.4
+NETcorr(trans_info,["A03","B01","B02"],"clnt_id","clac_nm2","buy_am",threshold,"Mart") # Mart
+NETcorr(trans_info,["A01"],"clnt_id","clac_nm2","buy_am",threshold,"Department store") # Department store
+NETcorr(trans_info, ["A02"],"clnt_id","clac_nm2","buy_am",threshold,"Outlet") # Outlet
+NETcorr(trans_info,["B03"],"clnt_id","clac_nm2","buy_am",threshold,"cosmetics") # cosmetics
