@@ -3,8 +3,7 @@
 import os
 os.getcwd()
 from os import chdir
-#os.chdir('C:\\Users\\UOS\\Documents\\GITHUB\\LFU')
-os.chdir('C:\\Users\\MYCOM')
+os.chdir('C:\\Users\\UOS\\Dropbox')
 pdir = os.getcwd() ;print(pdir)
 
 # import sys
@@ -28,8 +27,8 @@ import shelve
 pd.set_option('display.expand_frame_repr', False) 
 
 #%% Load raw data
-df_buy  = pd.read_csv("./Dropbox\\LFY\\datasets/ppdata\\df_buy.csv") 
-df_nobuy = pd.read_csv("./Dropbox\\LFY\\datasets/ppdata\\df_nobuy.csv") 
+df_buy  = pd.read_csv("./LFY\\datasets/ppdata\\df_buy.csv") 
+df_nobuy = pd.read_csv("./LFY\\datasets/ppdata\\df_nobuy.csv") 
 
 
 #%% buy
@@ -37,8 +36,12 @@ df1 = df_buy
 df1['hit_diff']=df1.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt'])['hit_pss_tm'].diff(periods=-1)*-1
 df1['hit_diff_ratio'] = df1['hit_diff']/ df1['tot_sess_hr_v'] 
 
-df2 = df1.groupby(['clnt_id','sess_id','sess_dt']).action_type.value_counts().unstack(level=-1, fill_value=0).reset_index()   # count accorinding to action_type
-df3 = df1.groupby(['clnt_id','sess_id','sess_dt','action_type'])['hit_diff'].agg('sum').unstack(level=-1, fill_value=0).reset_index()       # time consuming by action_type
+total_hit_seq = df1.sort_values(['clnt_id','sess_id','sess_dt','hit_seq']).groupby(['clnt_id','sess_id','sess_dt']).nth(-1)['hit_seq']
+count_hit_seq_tmp = df1.groupby(['clnt_id','sess_id','sess_dt','action_type'])['hit_seq'].agg('count')
+freq_hit_seq_tmp = count_hit_seq_tmp/total_hit_seq
+
+df2 = freq_hit_seq_tmp.unstack(level=-1, fill_value=0).reset_index()   # count accorinding to action_type
+df3 = df1.groupby(['clnt_id','sess_id','sess_dt','action_type'])['hit_diff_ratio'].agg('sum').unstack(level=-1, fill_value=0).reset_index()       # time consuming by action_type
 df2.rename(columns = {0 : 'action_count_0', 1 : 'action_count_1', 2 : 'action_count_2', 3 : 'action_count_3',
                       4 : 'action_count_4', 5 : 'action_count_5', 6 : 'action_count_6', 7 : 'action_count_7'}, inplace = True)
 df3.rename(columns = {0 : 'action_time_0', 1 : 'action_time_1', 2 : 'action_time_2', 3 : 'action_time_3',
@@ -74,7 +77,7 @@ df_if_tmp = df_if_tmp.merge(df10,on=['clnt_id','sess_id','sess_dt'], how='inner'
 
 #%% final table for customer information
 df_design_buy = pd.concat([df_buy_if, df_if_tmp], axis=0)
-df_design_buy.to_csv("C:\\Users\\MYCOM\\Dropbox\\LFY\\datasets/ppdata\\df_design_buy.csv")
+df_design_buy.to_csv("./LFY\\datasets/ppdata\\df_design_buy.csv",index=False)
 
 #%%
 df_design_buy = pd.read_csv("C:\\Users\\MYCOM\\Dropbox\\LFY\\datasets\\df_design_buy.csv",index_col=0)
