@@ -30,7 +30,6 @@ raw_online_bh  = pd.read_csv(".\Dropbox\\LFY\\datasets\\rawdata\\online_bh.csv")
 raw_trans_info = pd.read_csv(".\Dropbox\\LFY\\datasets\\rawdata\\trans_info.csv") 
 raw_demo_info  = pd.read_csv(".\Dropbox\\LFY\\datasets\\rawdata\\demo_info.csv") 
 raw_prod_info  = pd.read_csv(".\Dropbox\\LFY\\datasets\\rawdata\\prod_info.csv") 
-
 #%% copy raw data
 online_bh = raw_online_bh.copy()
 trans_info= raw_trans_info.copy()
@@ -42,6 +41,7 @@ df_right = [raw_demo_info]
 for dtidx in range(len(df_right)):
     dt_temp = df_right[dtidx].copy()
     online_bh = online_bh.merge(dt_temp, on='clnt_id', how='left')
+
 
 #%% 2,3,4 merge
 prod_info_uk=raw_prod_info.copy()
@@ -79,15 +79,18 @@ df_action_n7 =online_bh.copy()
 df_action_n7 = df_action_n7[df_action_n7['action_type']!=7]
 online_bh=pd.concat([df_action7_nd, df_action_n7]) 
 
+
+#%%
 # astype == str
 #online_bh['clnt_id'].sort_values()
 #online_bh['clnt_id']=online_bh['clnt_id'].astype('str')
 #online_bh['clnt_id'].sort_values()
 #online_bh['sess_id']=online_bh['sess_id'].astype('str')
 #online_bh['trans_id'] =online_bh['trans_id'].astype('str')
-online_bh['sess_dt'] = online_bh[['sess_dt']].applymap('str').applymap(lambda s: "{}-{}-{}".format(s[0:4],s[4:6],s[6:],))
+online_bh['sess_dt'] = online_bh[['sess_dt']].applymap(str).applymap(lambda s: "{}-{}-{}".format(s[0:4],s[4:6],s[6:],))
 online_bh['sess_dt'] = pd.to_datetime(online_bh['sess_dt'])
 online_bh.sort_values(['clnt_id'])['clnt_id']
+
 #%% data2 : trans_info 전처리
 
 # -- 구매 수량 (buy_ct) == 0 인거 존재
@@ -119,6 +122,7 @@ trans_info['weekend'][trans_info.day_of_week.isin(['Saturday','Sunday'])] = 1
 # trans_info['trans_id']=trans_info['trans_id'].astype('int').astype('str')
 
 
+
 #%% nobuy 정의 : 동일 session내에서 action_type = 6(구매 완료) 없는 사람 
 df_buy =online_bh.copy()
 df_buy = df_buy[df_buy['action_type']==6]
@@ -129,7 +133,6 @@ buy_session_key
 
 temp = online_bh.copy()
 temp=temp.merge(buy_session_key, how='left').drop_duplicates() # 중복행 제거해야함
-
 temp.head()
 
 df_nobuy =temp[temp['buy'].isna()]
@@ -155,6 +158,7 @@ tmerge2 = tmerge.sort_values(['clnt_id','sess_dt','sess_id','hit_pss_tm']).group
 
 df_buy = df_buy[~(df_buy['id'].isin(tmerge2['id']))]
 
+# df_buy.to_csv(pdir+"\\Dropbox\\LFY\\datasets\\ppdata\\lyt_df_buy.csv",index=False)
 #%% df_buy ['trans_id'] backward fill ! : last_action !=6 인 경우 제거 : 'clnt_id','sess_dt','sess_id','hit_seq'별로 정렬 후 6 이후의 행 제거
 df_buy.sort_values(['clnt_id'])['clnt_id']
 temp      = df_buy.copy()  
