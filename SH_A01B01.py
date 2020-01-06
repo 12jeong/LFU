@@ -67,7 +67,6 @@ trans_info      = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\ppdata\\trans_info.csv
 
 df_buy         = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\ppdata\\df_buy.csv")   
 df_nobuy       = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\ppdata\\df_nobuy.csv")  
-
 df_design_buy  = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\ppdata\\df_design_buy.csv",index_col=0) 
 
 raw_mg_ppdata      = pd.read_csv(pc+"Dropbox\\LFY\\datasets\\ppdata\\mg_ppdata.csv")   #  51297
