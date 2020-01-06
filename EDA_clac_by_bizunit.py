@@ -13,10 +13,9 @@ import sklearn
 import matplotlib as mpl
 
 # -- DIRECTORY
-pcsh = "C:\\Users\\user\\"
-pc = pcsh
-os.chdir(pcsh)
-pdir = os.getcwd() ; print(pdir) #os.chdir('C:\\Users\\UOS\\Documents\\GITHUB\LFU')
+os.chdir('C:\\Users\\MYCOM')
+pdir = os.getcwd() ;print(pdir)
+
 # -- PLOT STYLE
 plt.style.use('ggplot') # 그래프의 스타일을 지정
 mpl.rcParams.update({'font.size':14})
@@ -26,12 +25,14 @@ plt.rc('font',family='Malgun Gothic') # windows
 pd.set_option('display.expand_frame_repr', False) 
 
 #%% Load raw data
-df_buy  = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\df_buy.csv") 
-df_nobuy = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\df_nobuy.csv")
-online_bh = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\online_bh.csv")
-trans_info = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\trans_info.csv")
-df_design_buy = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\df_design_buy.csv",index_col=0)
-mg_ppdata = pd.read_csv(pcsh+"Dropbox\\LFY\\datasets\\ppdata\\mg_ppdata.csv")
+df_buy  = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\df_buy.csv") 
+df_nobuy = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\df_nobuy.csv")
+online_bh = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\online_bh.csv")
+trans_info = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\trans_info.csv")
+df_design_buy = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\df_design_buy.csv")
+mg_ppdata = pd.read_csv(".\Dropbox\\LFY\\datasets\\ppdata\\mg_ppdata.csv")
+
+
 #%%
 len(np.unique(trans_info[trans_info.biz_unit=="B03"].clac_nm1))
 len(np.unique(trans_info[trans_info.biz_unit=="B03"].clac_nm2))
@@ -209,7 +210,7 @@ myplot(x_new[:,0:2],np.transpose(pca.components_[0:2, :]))
 plt.show()
 
 
-# network by corrleation matrix
+#%% network by corrleation matrix
 import networkx as nx
 
 def NETcorr(dataframe,BIZ_set,ID,CL,SCORE,threshold,title):
