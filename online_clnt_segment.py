@@ -13,7 +13,7 @@ import sklearn
 import matplotlib as mpl
 
 # -- DIRECTORY
-os.chdir('C:\\Users\\MYCOM\\Dropbox')
+os.chdir('C:/Users/MYCOM/Dropbox')
 pdir = os.getcwd() ;print(pdir)
 
 # -- PLOT STYLE
@@ -25,10 +25,10 @@ plt.rc('font',family='Malgun Gothic') # windows
 pd.set_option('display.expand_frame_repr', False) 
 
 #%% Load data
-df_buy  = pd.read_csv(".\LFY\\datasets/ppdata\\df_buy.csv") 
-online_bh  = pd.read_csv(".\LFY\\datasets\\ppdata\\online_bh.csv" )
-trans_info = pd.read_csv(".\LFY\\datasets/ppdata\\trans_info.csv") 
-# df_nobuy = pd.read_csv("./LFY\\datasets/ppdata\\df_nobuy.csv") 
+df_buy  = pd.read_csv(".\LFY/datasets/ppdata/df_buy.csv") 
+online_bh  = pd.read_csv(".\LFY/datasets/ppdata/online_bh.csv" )
+trans_info = pd.read_csv(".\LFY/datasets/ppdata/trans_info.csv") 
+# df_nobuy = pd.read_csv("./LFY/datasets/ppdata/df_nobuy.csv") 
 
 online_bh['sess_dt'] =  pd.to_datetime(online_bh['sess_dt'])
 trans_info['de_dt'] =  pd.to_datetime(trans_info['de_dt'])
@@ -130,13 +130,13 @@ df_buytime.columns = ['biz_unit','clnt_id','buy_time']
 total_hit_seq = df1.sort_values(['biz_unit','clnt_id','sess_id','sess_dt','hit_seq']).groupby(['biz_unit','clnt_id','sess_id','sess_dt']).nth(-1)['hit_seq']
 count_hit_seq_tmp = df1.groupby(['biz_unit','clnt_id','sess_id','sess_dt','action_type'])['hit_seq'].agg('count')
 freq_hit_seq_tmp = count_hit_seq_tmp/total_hit_seq
-df2 = freq_hit_seq_tmp.unstack(level=-1, fill_value=0).reset_index()   # count accorinding to action_type
+df2 = freq_hit_seq_tmp.unstack(level=-1, fill_value= 'NaN' ).reset_index()   # count accorinding to action_type
 df2.rename(columns = {0 : 'action_count_0', 1 : 'action_count_1', 2 : 'action_count_2', 3 : 'action_count_3',
                       4 : 'action_count_4', 5 : 'action_count_5', 6 : 'action_count_6', 7 : 'action_count_7'}, inplace = True)
 df_action_freq = df2.groupby(['biz_unit','clnt_id']).agg('mean').reset_index().drop('sess_id',axis=1)
 
 # -- 각 행동 소요시간 비율 (ratio)
-df3 = df1.groupby(['biz_unit','clnt_id','sess_id','sess_dt','action_type'])['hit_diff_ratio'].agg('sum').unstack(level=-1, fill_value=0).reset_index()       # time consuming by action_type
+df3 = df1.groupby(['biz_unit','clnt_id','sess_id','sess_dt','action_type'])['hit_diff_ratio'].agg('sum').unstack(level=-1, fill_value='NaN').reset_index()       # time consuming by action_type
 df3.rename(columns = {0 : 'action_time_0', 1 : 'action_time_1', 2 : 'action_time_2', 3 : 'action_time_3',
                       4 : 'action_time_4', 5 : 'action_time_5', 6 : 'action_time_6', 7 : 'action_time_7'}, inplace = True)
 df_action_time = df3.groupby(['biz_unit','clnt_id']).agg('mean').reset_index().drop('sess_id',axis=1)
@@ -157,15 +157,16 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-
-clnt_info = pd.read_csv("./LFY/datasets/ppdata/clnt_info.csv")
+# clnt_info = pd.read_csv("./LFY/datasets/ppdata/clnt_info.csv")
 # only for buy client
 clnt_buy_info = clnt_info[~pd.isnull(clnt_info.buy_num)]
 clnt_buy_A01 = clnt_buy_info [clnt_buy_info.biz_unit == "A01"]
 clnt_buy_A02 = clnt_buy_info [clnt_buy_info.biz_unit == "A02"]
 clnt_buy_A03 = clnt_buy_info [clnt_buy_info.biz_unit == "A03"]
 # continuos variable for kmeans
-X = clnt_buy_A01.drop(['biz_unit','clnt_id','trfc_src','dvc_ctg_nm','clnt_gender','clnt_age','member'],axis=1)
+X = clnt_buy_A01.drop(['biz_unit','clnt_id','trfc_src','dvc_ctg_nm','clnt_age','member'],axis=1)
+X_col = X.columns
+X = X.dropna()
 # In general, it's a good idea to scale the data 
 scaler = StandardScaler()
 scaler.fit(X)
@@ -176,20 +177,11 @@ kmeans = KMeans(n_clusters=10)
 kmeans.fit(X)
 y_kmeans = kmeans.predict(X)
 
-# plot PCA loading and loading in biplot
-y = y_kmeans
-def myplot(score,coeff,labels=None):
-    xs = score[:,0]
-    ys = score[:,1]
-    n = coeff.shape[0]
-    scalex = 1.0/(xs.max() - xs.min())
-    scaley = 1.0/(ys.max() - ys.min())
-    plt.scatter(xs * scalex,ys * scaley, c = y)
-    plt.xlim(-1,1)
-    plt.ylim(-1,1)
-    plt.xlabel("PC{}".format(1))
-    plt.ylabel("PC{}".format(2))
-    plt.grid()
+X_df = pd.DataFrame(X)
+X_df['y'] = y_kmeans
 
-myplot(x_new[:,0:2],np.transpose(pca.components_[0:2, :]))
-plt.show()
+for i in range(19):
+   fig, ax = plt.subplots(figsize=(10,3))
+   plt.suptitle('')
+   X_df.boxplot(column=X_col[i], by='y', ax=ax)
+   plt.show()
