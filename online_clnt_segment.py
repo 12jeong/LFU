@@ -53,9 +53,6 @@ clnt_interval_tmp['days_diff'] = clnt_interval_tmp.sort_values(['biz_unit','clnt
 clnt_interval_tmp['days_diff'] = clnt_interval_tmp['days_diff'].dt.days*-1
 # sns.catplot(y="days_diff", kind="box", data=clnt_interval_tmp)
 # clnt_interval_tmp['days_diff'][clnt_interval_tmp['days_diff'].isna()] = 
-# 한번만 방문한 고객 분류
-clnt_interval_tmp['visit_once'] = 0
-clnt_interval_tmp['visit_once'][pd.isnull(clnt_interval_tmp['days_diff'])]=1
 # 처음방문(0)이 아닌 재방문 고객중 접속주기가 3일 이하인 개수
 clnt_interval_tmp['days_le3'] = 0
 clnt_interval_tmp['days_le3'][(clnt_interval_tmp['days_diff'] > 0) & (clnt_interval_tmp['days_diff'] <= 3)] = 1
@@ -69,7 +66,7 @@ clnt_interval_tmp['days_gt10'][clnt_interval_tmp['days_diff'] > 10] = 1
 clnt_interval_tmp2 = clnt_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'days_le3':'sum'}).reset_index()
 clnt_interval_tmp3 = clnt_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'days_le10':'sum'}).reset_index()
 clnt_interval_tmp4 = clnt_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'days_gt10':'sum'}).reset_index()
-clnt_interval = clnt_interval_tmp[['clnt_id','biz_unit','visit_once']].merge(clnt_interval_tmp2, how="inner").merge(clnt_interval_tmp3, how="inner").merge(clnt_interval_tmp4, how="inner")
+clnt_interval = clnt_interval_tmp[['clnt_id','biz_unit']].merge(clnt_interval_tmp2, how="inner").merge(clnt_interval_tmp3, how="inner").merge(clnt_interval_tmp4, how="inner")
 # clnt_interval_tmp['days_diff'].median()
 # clnt_interval_tmp['days_diff'].describe()
 # np.quantile(clnt_interval_tmp[~pd.isnull(clnt_interval_tmp.days_diff)].days_diff, 0.5)
@@ -147,51 +144,32 @@ df_action_time = df3.groupby(['biz_unit','clnt_id']).agg('mean').reset_index().d
 # -- merge for clnt_info
 clnt_info = clnt_info_tmp.merge(df_kwd,how="left").merge(df_max_2time,how="left").merge(df_buytime,how="left").merge(df_action_freq,how="left").merge(df_action_time,how="left")
 clnt_info.columns
-clnt_info = clnt_info.drop(['action_count_4','action_count_5','action_count_6','action_count_7',
+clnt_info = clnt_info.drop(['clnt_gender','action_count_4','action_count_5','action_count_6','action_count_7',
                             'action_time_4','action_time_5','action_time_6','action_time_7'],axis=1)
+clnt_info['dvc_ctg_nm'][clnt_info.dvc_ctg_nm=='mobile_app'] = 'mobile'
+clnt_info['dvc_ctg_nm'][clnt_info.dvc_ctg_nm=='mobile_web'] = 'mobile'
 clnt_info.columns
 #%% final table for customer information
-# clnt_info.to_csv("./LFY/datasets/ppdata/clnt_info.csv",index=False)
+clnt_info.to_csv("./LFY/datasets/ppdata/clnt_info.csv",index=False)
 
-#%% kmeans
-
-pd.read_csv("./LFY/datasets/ppdata/clnt_info.csv")
-
-
-
-#%% 마트데이터 손님 군집화 (구매 상품-clac_nm2을 중심으로)
+#%% K-means
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-# 상품의 단가 구하기 = buy_am/buy_ct
-# trans_info['buy_am_unit'] = trans_info['buy_am']/trans_info['buy_ct']
-trans_info['buy_am_new'] = trans_info['buy_am']/trans_info['buy_ct']
-# 상품분류별로 표준화하기 
-# trans_info['buy_am_std'] = trans_info.groupby('clac_nm2')['buy_am_unit'].apply(lambda x: (x - x.mean()) / x.std())
-# 표준화 한 단가에 buy_ct 곱해서 구매지수? 만들기
-# trans_info['buy_am_new'] = trans_info.buy_am_std * trans_info.buy_ct
-# 마트데이터만 추출 
-df_mart_tmp = trans_info[(trans_info.biz_unit == "A03")|(trans_info.biz_unit == "B01")|(trans_info.biz_unit == "B02")]
-df_mart_tmp2 = df_mart_tmp[['clnt_id','clac_nm2','buy_am_new']].groupby(['clnt_id','clac_nm2'])['buy_am_new'].agg('sum')
-df_mart = df_mart_tmp2.unstack(level=-1, fill_value=0)
 
-
-X = df_mart
-X_clnt = df_mart.index
-X_clac = df_mart.columns
-
-# In general, it's a good idea to scale the data prior to PCA.
+clnt_info = pd.read_csv("./LFY/datasets/ppdata/clnt_info.csv")
+# only for buy client
+clnt_buy_info = clnt_info[~pd.isnull(clnt_info.buy_num)]
+clnt_buy_A01 = clnt_buy_info [clnt_buy_info.biz_unit == "A01"]
+clnt_buy_A02 = clnt_buy_info [clnt_buy_info.biz_unit == "A02"]
+clnt_buy_A03 = clnt_buy_info [clnt_buy_info.biz_unit == "A03"]
+# continuos variable for kmeans
+X = clnt_buy_A01.drop(['biz_unit','clnt_id','trfc_src','dvc_ctg_nm','clnt_gender','clnt_age','member'],axis=1)
+# In general, it's a good idea to scale the data 
 scaler = StandardScaler()
 scaler.fit(X)
 X=scaler.transform(X)    
-pca = PCA()
-x_new = pca.fit_transform(X)
-pca.components_[0] # 1주성분
-pca.components_[1] # 2주성분
-
-pd.DataFrame([X_clac,pca.components_[0],pca.components_[1]]).transpose()
-plt.plot(np.cumsum(pca.explained_variance_ratio_))
 
 # kmeans
 kmeans = KMeans(n_clusters=10)
