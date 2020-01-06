@@ -5,7 +5,7 @@ import os
 os.getcwd()
 from os import chdir
 import pandas as pd
-import seaborn as sns 
+import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -20,15 +20,15 @@ pdir = os.getcwd() ;print(pdir)
 plt.style.use('ggplot') # 그래프의 스타일을 지정
 mpl.rcParams.update({'font.size':14})
 plt.rc('font',family='Malgun Gothic') # windows
-%matplotlib inline 
+%matplotlib inline
 #%% expand output display pd.df
-pd.set_option('display.expand_frame_repr', False) 
+pd.set_option('display.expand_frame_repr', False)
 
 #%% Load data
-df_buy  = pd.read_csv("./LFY/datasets/ppdata/df_buy.csv") 
+df_buy  = pd.read_csv("./LFY/datasets/ppdata/df_buy.csv")
 online_bh  = pd.read_csv("./LFY/datasets/ppdata/online_bh.csv" )
-trans_info = pd.read_csv("./LFY/datasets/ppdata/trans_info.csv") 
-# df_nobuy = pd.read_csv("./LFY/datasets/ppdata/df_nobuy.csv") 
+trans_info = pd.read_csv("./LFY/datasets/ppdata/trans_info.csv")
+# df_nobuy = pd.read_csv("./LFY/datasets/ppdata/df_nobuy.csv")
 
 online_bh['sess_dt'] =  pd.to_datetime(online_bh['sess_dt'])
 trans_info['de_dt'] =  pd.to_datetime(trans_info['de_dt'])
@@ -52,7 +52,7 @@ clnt_interval_tmp['days_diff'] = clnt_interval_tmp.sort_values(['biz_unit','clnt
 # ttmp = clnt_interval_tmp.sort_values(['biz_unit','clnt_id','sess_dt'])[['biz_unit','clnt_id','sess_dt','days_diff']]
 clnt_interval_tmp['days_diff'] = clnt_interval_tmp['days_diff'].dt.days*-1
 # sns.catplot(y="days_diff", kind="box", data=clnt_interval_tmp)
-# clnt_interval_tmp['days_diff'][clnt_interval_tmp['days_diff'].isna()] = 
+# clnt_interval_tmp['days_diff'][clnt_interval_tmp['days_diff'].isna()] =
 # 처음방문(0)이 아닌 재방문 고객중 접속주기가 3일 이하인 개수
 clnt_interval_tmp['days_le3'] = 0
 clnt_interval_tmp['days_le3'][(clnt_interval_tmp['days_diff'] > 0) & (clnt_interval_tmp['days_diff'] <= 3)] = 1
@@ -62,7 +62,7 @@ clnt_interval_tmp['days_le10'][(clnt_interval_tmp['days_diff'] > 0) & (clnt_inte
 # 처음방문(0)이 아닌 재방문 고객중 접속주기가 10일 초과인 개수
 clnt_interval_tmp['days_gt10'] = 0
 clnt_interval_tmp['days_gt10'][clnt_interval_tmp['days_diff'] > 10] = 1
-# ttmp = clnt_interval_tmp.sort_values(['biz_unit','clnt_id','sess_dt'])[['biz_unit','clnt_id','sess_dt','days_diff','days_in5','days_in30']] 
+# ttmp = clnt_interval_tmp.sort_values(['biz_unit','clnt_id','sess_dt'])[['biz_unit','clnt_id','sess_dt','days_diff','days_in5','days_in30']]
 clnt_interval_tmp2 = clnt_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'days_le3':'sum'}).reset_index()
 clnt_interval_tmp3 = clnt_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'days_le10':'sum'}).reset_index()
 clnt_interval_tmp4 = clnt_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'days_gt10':'sum'}).reset_index()
@@ -84,7 +84,7 @@ buy_interval_tmp['buy_diff'] = buy_interval_tmp.sort_values(['biz_unit','clnt_id
 # ttmp = buy_interval_tmp.sort_values(['biz_unit','clnt_id','sess_dt'])[['biz_unit','clnt_id','sess_dt','buy_diff']]
 buy_interval_tmp['buy_diff'] = buy_interval_tmp['buy_diff'].dt.days*-1
 # sns.catplot(y="buy_diff", kind="box", data=buy_interval_tmp)
-# buy_interval_tmp['buy_diff'][buy_interval_tmp['buy_diff'].isna()] = 
+# buy_interval_tmp['buy_diff'][buy_interval_tmp['buy_diff'].isna()] =
 # 처음방문(0)이 아닌 재방문 고객중 구매주기가 7일 이하인 개수
 buy_interval_tmp['buy_le7'] = 0
 buy_interval_tmp['buy_le7'][(buy_interval_tmp['buy_diff'] > 0) & (buy_interval_tmp['buy_diff'] <= 10)] = 1
@@ -95,7 +95,7 @@ buy_interval_tmp['buy_le20'][(buy_interval_tmp['buy_diff'] > 0) & (buy_interval_
 buy_interval_tmp['buy_gt20'] = 0
 buy_interval_tmp['buy_gt20'][buy_interval_tmp['buy_diff'] > 20] = 1
 
-# ttmp = buy_interval_tmp.sort_values(['biz_unit','clnt_id','sess_dt'])[['biz_unit','clnt_id','sess_dt','buy_diff','days_in5','days_in30']] 
+# ttmp = buy_interval_tmp.sort_values(['biz_unit','clnt_id','sess_dt'])[['biz_unit','clnt_id','sess_dt','buy_diff','days_in5','days_in30']]
 buy_interval_tmp2 = buy_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'buy_le7':'sum'}).reset_index()
 buy_interval_tmp3 = buy_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'buy_le20':'sum'}).reset_index()
 buy_interval_tmp4 = buy_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'buy_gt20':'sum'}).reset_index()
@@ -138,9 +138,9 @@ df_max_2time_tmp = df1[df1.action_type==2].groupby(['biz_unit','clnt_id','sess_i
 df_max_2time = df_max_2time_tmp.groupby(['biz_unit','clnt_id'])['max_2time'].agg('mean').reset_index()
 df_max_2time = df_max_2time.fillna(0)
 
-# -- 첫 구매까지 걸린 시각 
+# -- 첫 구매까지 걸린 시각
 df_buytime_tmp = df1[df1.action_type==6].sort_values(['biz_unit','clnt_id','sess_id','sess_dt','hit_seq']
-                                                 ).groupby(['biz_unit','clnt_id','sess_id','sess_dt'])['hit_pss_tm'].nth(0).reset_index()   
+                                                 ).groupby(['biz_unit','clnt_id','sess_id','sess_dt'])['hit_pss_tm'].nth(0).reset_index()
 df_buytime = df_buytime_tmp.groupby(['biz_unit','clnt_id'])['hit_pss_tm'].agg('mean').reset_index()
 df_buytime.columns = ['biz_unit','clnt_id','buy_time']
 
@@ -160,13 +160,10 @@ action3_count = action3_count_tmp.groupby(['biz_unit','clnt_id']).agg('mean').re
 #df_action_freq = df2.groupby(['biz_unit','clnt_id']).agg(np.nanmean).reset_index()
 #df_action_freq = df_action_freq.fillna(0)
 # -- 각 행동 소요시간 비율 (ratio)
-#df3 = df1.groupby(['biz_unit','clnt_id','sess_id','sess_dt','action_type'])['hit_diff_ratio'].agg('sum').unstack(level=-1, fill_value=np.nan).reset_index()       # time consuming by action_type
-#df3.rename(columns = {0 : 'action_time_0', 1 : 'action_time_1', 2 : 'action_time_2', 3 : 'action_time_3',
-#                      4 : 'action_time_4', 5 : 'action_time_5', 6 : 'action_time_6', 7 : 'action_time_7'}, inplace = True)
-#df3 = df3.drop(['sess_id','sess_dt'],axis=1)
-#df_action_time = df3.groupby(['biz_unit','clnt_id']).agg(np.nanmean).reset_index()
-#df_action_time = df_action_time.fillna(0)
-
+df3 = df1.groupby(['biz_unit','clnt_id','sess_id','sess_dt','action_type'])['hit_diff_ratio'].agg('sum').unstack(level=-1, fill_value='NaN').reset_index()       # time consuming by action_type
+df3.rename(columns = {0 : 'action_time_0', 1 : 'action_time_1', 2 : 'action_time_2', 3 : 'action_time_3',
+                      4 : 'action_time_4', 5 : 'action_time_5', 6 : 'action_time_6', 7 : 'action_time_7'}, inplace = True)
+df_action_time = df3.groupby(['biz_unit','clnt_id']).agg('mean').reset_index().drop('sess_id',axis=1)
 
 # -- merge for clnt_info
 clnt_info = clnt_info_tmp.merge(df_kwd,how="left").merge(df_max_2time,how="left").merge(df_buytime,how="left").merge(action3_count,how="left")
@@ -200,10 +197,10 @@ clnt_buy_A03 = clnt_buy_info [clnt_buy_info.biz_unit == "A03"]
 X = clnt_buy_A03.drop(['biz_unit','clnt_id','trfc_src','dvc_ctg_nm','clnt_age','member','max_2time','action3_count'],axis=1)
 X_col = X.columns
 X = X.dropna()
-# In general, it's a good idea to scale the data 
+# In general, it's a good idea to scale the data
 scaler = StandardScaler()
 scaler.fit(X)
-X=scaler.transform(X)    
+X=scaler.transform(X)
 
 # kmeans
 kmeans = KMeans(n_clusters=4)
@@ -211,11 +208,10 @@ kmeans.fit(X)
 y_kmeans = kmeans.predict(X)
 
 X_df = pd.DataFrame(X)
-X_df.columns = X_col
 X_df['y'] = y_kmeans
 
-for i in range(len(X_col)):
-   fig, ax = plt.subplots(figsize=(7,5))
+for i in range(19):
+   fig, ax = plt.subplots(figsize=(10,3))
    plt.suptitle('')
    X_df.boxplot(column=X_col[i], by='y', ax=ax)
    plt.show()
