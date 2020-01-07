@@ -23,10 +23,10 @@ plt.rc('font',family='Malgun Gothic') # windows
 pd.set_option('display.expand_frame_repr', False) # expand output display pd.df
 
 # Load raw data
-raw_online_bh  = pd.read_csv("C:\\Users\\YongTaek\\Dropbox\\LFY\\datasets\\online_bh.csv")   #  3196362
-raw_trans_info = pd.read_csv("C:\\Users\\YongTaek\\Dropbox\\LFY\\datasets\\trans_info.csv") 
-raw_demo_info  = pd.read_csv("C:\\Users\\YongTaek\\Dropbox\\LFY\\datasets\\demo_info.csv") 
-raw_prod_info  = pd.read_csv("C:\\Users\\YongTaek\\Dropbox\\LFY\\datasets\\prod_info.csv") 
+raw_online_bh  = pd.read_csv("C:\\Users\\YongTaek\\Dropbox\\LFY\\datasets\\rawdata\\online_bh.csv")   #  3196362
+raw_trans_info = pd.read_csv("C:\\Users\\YongTaek\\Dropbox\\LFY\\datasets\\rawdata\\trans_info.csv") 
+raw_demo_info  = pd.read_csv("C:\\Users\\YongTaek\\Dropbox\\LFY\\datasets\\rawdata\\demo_info.csv") 
+raw_prod_info  = pd.read_csv("C:\\Users\\YongTaek\\Dropbox\\LFY\\datasets\\rawdata\\prod_info.csv") 
 
 # copy raw data
 online_bh = raw_online_bh.copy()
@@ -103,19 +103,22 @@ sum(buy_tmp.groupby(['clnt_id','sess_id','sess_dt','trans_id'])['id'].agg('count
 df_buy = buy_tmp
 
 
-# df_buy에 검색 키워드와 구매 매칭
-df_buy.columns
-col_name =['clnt_id', 'sess_id', 'hit_seq','action_type', 'sess_dt', 'hit_tm',
-'hit_pss_tm', 'sech_kwd', 'trans_id', 'clnt_age']
+''' df_buy에 검색 키워드와 구매 매칭 작업 '''
 
-df_buy_tmp = df_buy[col_name]
-df_buy_tmp[df_buy_tmp.clnt_id ==2]
-sort_buy_tmp = df_buy_tmp.groupby(['clnt_id']).apply(lambda x: x.sort_values(by = ['sess_dt','hit_tm'], ascending = True))
-sort_buy_tmp.index.names = ['clnt_id', 'org_ind']
+# buy데이터에서 유용할것 같은 컬럼만 get
+df_buy.columns
+df_buy_tmp = df_buy
+
+# 그룹별 시간에 따라 정렬한 데이터. sort_buy_tmp
+# 먼저 sort하고 그다음 groupby하면 빠름.
+sort_buy_tmp = df_buy_tmp.groupby(['clnt_id','sess_dt','sess_id']).apply(lambda x: x.sort_values(by = ['hit_seq'], ascending = True))
+sort_buy_tmp.index
+sort_buy_tmp.index.names = ['clnt_id', 'sess_dt', 'sess_id','org_ind']
 sort_buy_tmp = sort_buy_tmp.reset_index(level=[1])
 sort_buy_tmp.index = pd.Index(range(len(sort_buy_tmp)))
 sort_buy_tmp['sess_dt'] = sort_buy_tmp['sess_dt'].astype('str')
 sort_buy_tmp.info()
+sort_buy_tmp
 
 # action_type에 검색에만 검색 키워드 존재.
 for i in range(7):
@@ -176,7 +179,7 @@ trans_info[trans_info.trans_id==66779]
 trans_info[trans_info.trans_id==38730]
 '''
 
-# 한 번에 에어컨을 삼. (일단 합쳐나 보자)
+# 사전 행동유형 없이 한 번에 에어컨을 삼. (데이터 어떻게 처리할 것인지.)
 record_buy[record_buy.trans_id=='59330']
 df_buy[df_buy.clnt_id==14245]
 sort_buy_tmp[sort_buy_tmp.trans_id==59330] # 에어컨 한번에 산거 아님.
@@ -246,45 +249,113 @@ record_buy['trans_id'] = record_buy['trans_id'].astype('str')
 tmp2 = record_buy.clnt_id + str('_') + record_buy.trans_id + str('_') + record_buy.de_dt + str('_')+ record_buy.de_tm
 
 
-#record_buy
-tmp2.sort_values()
-#trans_info
-tmp.sort_values()
-
 # 10002_47347 이걸보면 분명 0710 18:05에 구입했다는 action이 나오는데
 # 구매 정보에서는 18시:05에 많이 샀다고 나옴.
 # 장바구니에 넣고 많이 산것.?? 
 trans_info[(trans_info.clnt_id=='10002') & (trans_info.trans_id=='47347')&
 (trans_info.de_dt=='20190710')]
 
-# record_buy를 기준으로 trans_info를 머지 하지 말고
-# trans_info를 기준으로 해본다면? => 아까 record_buy도 두개씩 있는거 처리를 하면 가능함.
-tmp2.value_counts()
-record_buy[(record_buy.clnt_id=='65852')&(record_buy.trans_id=='54224')&
-(record_buy.de_dt=='20190718')]
-trans_info[(trans_info.clnt_id=='65852')&(trans_info.trans_id=='54224')&
-(trans_info.de_dt=='20190718')]
 
-sort_buy_tmp[(sort_buy_tmp.clnt_id==65852)]
-# 검색 키워드가 있는 구매고객의 정보만 남기자 ?
+# hit_pss_tm 내림차순 clnt_id 그룹 dedt detm 
+# record_buy 하나 선택해서 trans_info를 기준으로 left 조인.
+for i in tmp2.value_counts().head(16).index:
+    x,y,j,k = i.split('_')
+    temp = record_buy[(record_buy.clnt_id==x)&(record_buy.trans_id==y)&
+    (record_buy.de_dt==j)&(record_buy.de_tm==k)]
+    print(np.argmin(temp.hit_pss_tm))
+    
+    #record_buy = record_buy.drop(index=np.argmin(temp.hit_pss_tm),axis=0)
 
-# 검색 기록이 있는 사람 + 구매만 남겨서 merge 해보자
-sort_buy_tmp[sort_buy_tmp.action_type==6].clnt_id.unique()
-re_srch_buy=sort_buy_tmp[sort_buy_tmp.action_type==0].clnt_id.isin(sort_buy_tmp[sort_buy_tmp.action_type==6].clnt_id.unique())
-
-
-# 일단 검색기록이 있는 아이디의 구매 이력을 뽑음.
-re_srch_rev=sort_buy_tmp[sort_buy_tmp.action_type==6].clnt_id.isin(sort_buy_tmp[sort_buy_tmp.action_type==0].clnt_id.unique())
-re_srch_rev = sort_buy_tmp[sort_buy_tmp.action_type==6][re_srch_rev]
-
-
-record_sech = sort_buy_tmp[sort_buy_tmp.action_type==0]
-record_sech==re_srch_buy
-re_srch_rev
-
-np.sum(tmp2.value_counts()>1)
+''' 잘 빠졌나 확인
 record_buy[(record_buy.clnt_id=='51913')&(record_buy.trans_id=='92916')&
 (record_buy.de_dt=='20190904')&(record_buy.de_tm=='15:48')]
 
-# hit_pss_tm 내림차순 clnt_id 그룹 dedt detm 
-# recorrd_buy 하나 선택해서 trans_info를 기준으로 left 조인.
+record_buy[(record_buy.clnt_id=='14608')&(record_buy.trans_id=='74516')&
+(record_buy.de_dt=='20190813')&(record_buy.de_tm=='16:40')]
+
+record_buy[(record_buy.clnt_id=='51913')&(record_buy.trans_id=='50827')&
+(record_buy.de_dt=='20190715')&(record_buy.de_tm=='13:39')]
+
+record_buy[(record_buy.clnt_id=='40610')&(record_buy.trans_id=='91036')&
+(record_buy.de_dt=='20190903')&(record_buy.de_tm=='18:42')]
+
+record_buy[(record_buy.clnt_id=='54850')&(record_buy.trans_id=='110996')&
+(record_buy.de_dt=='20190927')&(record_buy.de_tm=='14:32')]
+
+record_buy[(record_buy.clnt_id=='30421')&(record_buy.trans_id=='61030')&
+(record_buy.de_dt=='20190927')&(record_buy.de_tm=='14:32')]
+
+record_buy[(record_buy.clnt_id=='54850')&(record_buy.trans_id=='110996')&
+(record_buy.de_dt=='20190927')&(record_buy.de_tm=='14:32')]
+
+record_buy[(record_buy.clnt_id=='54850')&(record_buy.trans_id=='110996')&
+(record_buy.de_dt=='20190927')&(record_buy.de_tm=='14:32')]
+'''
+
+# 키로 잘 구성되어 있는지 확인
+tmp2 = record_buy.clnt_id + str('_') + record_buy.trans_id + str('_') + record_buy.de_dt + str('_')+ record_buy.de_tm
+
+
+# merge 성공
+trans_join = trans_info.merge(record_buy, on=['clnt_id', 'trans_id', 'de_dt','de_tm'],how='left')
+trans_join[trans_join.org_ind.notnull()]
+len(trans_join.clac_nm1.value_counts())
+
+
+# action type이 6인것만 골라내서 unique 한지 본 뒤에 merge하기
+sort_buy_tmp[sort_buy_tmp.clnt_id==2].head(50)
+trans_join[trans_join.trans_id=='62037']
+trans_join.action_type
+
+# action_type이 6인 것만 뽑는게 trans_info에도 있고 buy의 trans_id도 같이 있는거임.
+# tmp3는 품목에도 있고 구매자가 산 기록도 있는거.
+trans_ac6 = trans_join[trans_join.action_type.notnull()]
+trans_ac6.action_type = trans_ac6.action_type.astype('str')
+trans_ac6.hit_pss_tm = trans_ac6.hit_pss_tm.astype('str')
+
+# 위에는 action_type이 6인것만 뽑았는데 이것을 보면 꼭 그렇게 하면 안될수 도 있음.
+trans_join[trans_join.clnt_id=='58265'].head(19)
+sort_buy_tmp[sort_buy_tmp.clnt_id==58265]
+
+# tmp3에서 clnt_id, trans_id, de_dt, de_tm 유니크한 것보다 작은행만 추출??
+trans_ac6
+trans_ac6[trans_ac6.duplicated(['clnt_id','trans_id','de_dt','de_tm'])]
+tmptrans_ac6.head()
+keyword = sort_buy_tmp[sort_buy_tmp.sech_kwd.notnull()]
+
+
+tmp = keyword[keyword.clnt_id==2]
+tmp
+sort_buy_tmp[sort_buy_tmp.clnt_id==2].head(50)
+trans_info[trans_info.clnt_id=='2'].sort_values(by='de_dt')
+trans_join.columns
+
+sort_buy_tmp
+
+
+# hit_pss_tm은 누적이라 일단 각 세션에 있는시간으로 분류.
+df1 = df_buy
+df1['hit_diff'] = df1.sort_values(['clnt_id','sess_dt','sess_id','hit_seq']).groupby(['clnt_id','sess_id','sess_dt'])['hit_pss_tm'].diff(periods=-1)*-1
+df1.sort_values(['clnt_id','sess_dt','sess_id','hit_seq'])[['clnt_id','hit_pss_tm','hit_diff']]
+
+sort_buy_tmp = df1.groupby(['clnt_id','sess_dt','sess_id']).apply(lambda x: x.sort_values(by = ['hit_seq'], ascending = True))
+
+sort_buy_tmp.info()
+
+# kwd를 세션에 따라서 분류.
+tmp = [sort_buy_tmp.index[x][3] for x in range(len(sort_buy_tmp))]
+len(tmp)
+sort_buy_tmp = sort_buy_tmp.reset_index(drop=True)
+sort_buy_tmp['org_ind'] = pd.DataFrame(tmp)
+sort_buy_tmp.head(50)
+
+sort_buy_tmp['kwd'] = sort_buy_tmp.groupby(['clnt_id','sess_dt','sess_id'])['sech_kwd'].ffill()
+sort_buy_tmp.kwd.isnull().sum()
+sort_buy_tmp.kwd2.isnull().sum()
+
+
+
+sort_buy_tmp.groupby(['clnt_id','sess_dt','kwd2'])['hit_diff'].sum()
+
+sort_buy_tmp
+trans_join
