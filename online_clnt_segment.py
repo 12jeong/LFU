@@ -13,7 +13,7 @@ import sklearn
 import matplotlib as mpl
 
 # -- DIRECTORY
-os.chdir('C:/Users/UOS/Dropbox')
+os.chdir('C:/Users/MYCOM/Dropbox')
 pdir = os.getcwd() ;print(pdir)
 
 # -- PLOT STYLE
@@ -67,16 +67,16 @@ clnt_interval_tmp2 = clnt_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'day
 clnt_interval_tmp3 = clnt_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'days_le10':'sum'}).reset_index()
 clnt_interval_tmp4 = clnt_interval_tmp.groupby(['biz_unit','clnt_id']).agg({'days_gt10':'sum'}).reset_index()
 clnt_interval = clnt_interval_tmp.drop_duplicates(['clnt_id','biz_unit'])[['clnt_id','biz_unit']].merge(clnt_interval_tmp2, how="inner").merge(clnt_interval_tmp3, how="inner").merge(clnt_interval_tmp4, how="inner")
-# clnt_interval_tmp['days_diff'].median()
-# clnt_interval_tmp['days_diff'].describe()
-#clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A01"]['days_diff'].median()
-#clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A01"]['days_diff'].describe()
-#clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A02"]['days_diff'].median()
-#clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A02"]['days_diff'].describe()
-#clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A03"]['days_diff'].median()
-#clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A03"]['days_diff'].describe()
-# np.quantile(clnt_interval_tmp[~pd.isnull(clnt_interval_tmp.days_diff)].days_diff, 0.5)
-# np.quantile(clnt_interval_tmp[~pd.isnull(clnt_interval_tmp.days_diff)].days_diff, 0.8)
+ clnt_interval_tmp['days_diff'].median()
+ clnt_interval_tmp['days_diff'].describe()
+clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A01"]['days_diff'].median()
+clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A01"]['days_diff'].describe()
+clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A02"]['days_diff'].median()
+clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A02"]['days_diff'].describe()
+clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A03"]['days_diff'].median()
+clnt_interval_tmp[clnt_interval_tmp.biz_unit=="A03"]['days_diff'].describe()
+ np.quantile(clnt_interval_tmp[~pd.isnull(clnt_interval_tmp.days_diff)].days_diff, 0.5)
+ np.quantile(clnt_interval_tmp[~pd.isnull(clnt_interval_tmp.days_diff)].days_diff, 0.8)
 
 # -- clnt별 구입주기 (일) - 단기, 장기
 buy_interval_tmp = df_buy.drop_duplicates(['biz_unit','clnt_id','sess_dt'])
