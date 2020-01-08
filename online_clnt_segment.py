@@ -190,32 +190,263 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-# clnt_info = pd.read_csv("./LFY/datasets/ppdata/clnt_info.csv")
+
+clnt_info = pd.read_csv("./LFY/datasets/ppdata/clnt_info.csv")
 # only for buy client
 clnt_buy_info = clnt_info[~pd.isnull(clnt_info.buy_num)]
+
 clnt_buy_A01 = clnt_buy_info [clnt_buy_info.biz_unit == "A01"]
 clnt_buy_A02 = clnt_buy_info [clnt_buy_info.biz_unit == "A02"]
 clnt_buy_A03 = clnt_buy_info [clnt_buy_info.biz_unit == "A03"]
 # continuos variable for kmeans
-X = clnt_buy_A03.drop(['biz_unit','clnt_id','trfc_src','dvc_ctg_nm','clnt_age','member','max_2time','action3_count'],axis=1)
-X_col = X.columns
-X = X.dropna()
+X_raw = clnt_buy_A02.drop(['biz_unit','clnt_id','trfc_src','dvc_ctg_nm','clnt_age','member','max_2time','action3_count'],axis=1)
+X_col = X_raw.columns
+X_raw = X_raw.dropna()
 # In general, it's a good idea to scale the data 
 scaler = StandardScaler()
-scaler.fit(X)
-X=scaler.transform(X)    
+scaler.fit(X_raw)
+X=scaler.transform(X_raw)    
 
 # kmeans
-kmeans = KMeans(n_clusters=4)
+import random
+random.seed(1)
+kmeans = KMeans(n_clusters=3)
 kmeans.fit(X)
 y_kmeans = kmeans.predict(X)
 
-X_df = pd.DataFrame(X)
+X_df = pd.DataFrame(X_raw)
 X_df.columns = X_col
 X_df['y'] = y_kmeans
+
+
+X_df.groupby('y').size()/X_df.shape[0]
 
 for i in range(len(X_col)):
    fig, ax = plt.subplots(figsize=(7,5))
    plt.suptitle('')
    X_df.boxplot(column=X_col[i], by='y', ax=ax)
    plt.show()
+      
+#%% 지수생성
+
+df =  clnt_info[~pd.isnull(clnt_info.buy_num)]
+# 관심 지수
+df['attract'] = 30*df['tot_pag_view_ct'] + 30*df['tot_sess_hr_v'] + 20*df['sech_kwd'] 
+# 실질 접속/구매 지수
+df['realbuy'] = 20*df['login_num'] + 100*df['buy_num'] +  100*(1/np.log(df['buy_time']/10+1))
+# 단기 접속/구매 지수
+df['short'] = 100*df['days_le3'] + 100*df['days_le10'] + 50*df['buy_le7'] + 50*df['buy_le20']
+# 장기 접속/구매 지수
+df['long'] = 30*df['days_le10'] + 70*df['days_gt10'] + 30*df['buy_le20'] + 70*df['buy_gt20']
+
+# A03 : 0-파워쇼핑형 1-실속형 2-신중형
+df.groupby('y')['attract'].mean()
+df.groupby('y')['realbuy'].mean()
+df.groupby('y')['short'].mean()
+df.groupby('y')['long'].mean()
+
+df_box = df[['attract','realbuy','short','long']]
+df_col = df_box.columns
+df_box['y'] = df['y']
+for i in range(4):
+   fig, ax = plt.subplots(figsize=(7,5))
+   plt.suptitle('')
+   df_box.boxplot(column=df_col[i], by='y', ax=ax, showfliers=False)
+   plt.show()
+      
+
+#%% K-means + buy_am 추가
+df_buy_am = trans_info.groupby(['clnt_id','biz_unit']).agg({'buy_am':'mean'}).reset_index()
+clnt_info2 = clnt_info.merge(df_buy_am,how="inner")
+
+clnt_info.head()
+
+clnt_buy_A01 = clnt_info2 [clnt_info2.biz_unit == "A01"]
+clnt_buy_A02 = clnt_info2 [clnt_info2.biz_unit == "A02"]
+clnt_buy_A03 = clnt_info2 [clnt_info2.biz_unit == "A03"]
+
+# continuos variable for kmeans
+X_raw = clnt_buy_A03.drop(['biz_unit','clnt_id','trfc_src','dvc_ctg_nm','clnt_age','member','max_2time','action3_count'],axis=1)
+X_col = X_raw.columns
+X_raw = X_raw.dropna()
+# In general, it's a good idea to scale the data 
+scaler = StandardScaler()
+scaler.fit(X_raw)
+X=scaler.transform(X_raw)    
+
+# kmeans
+kmeans = KMeans(n_clusters=3)
+kmeans.fit(X)
+y_kmeans = kmeans.predict(X)
+
+X_df = pd.DataFrame(X_raw)
+X_df.columns = X_col
+X_df['y'] = y_kmeans
+
+X_df.groupby('y').size()/X_df.shape[0]
+
+
+#%% visualization of grouping
+df =  clnt_info[~pd.isnull(clnt_info.buy_num)]
+# 관심 지수
+df['attract'] = 30*df['tot_pag_view_ct'] + 30*df['tot_sess_hr_v'] + 20*df['sech_kwd'] 
+# 실질 접속/구매 지수
+df['realbuy'] = 20*df['login_num'] + 100*df['buy_num'] +  100*(1/np.log(df['buy_time']/10+1))
+# 단기 접속/구매 지수
+df['short'] = 100*df['days_le3'] + 100*df['days_le10'] + 50*df['buy_le7'] + 50*df['buy_le20']
+# 장기 접속/구매 지수
+df['long'] = 30*df['days_le10'] + 70*df['days_gt10'] + 30*df['buy_le20'] + 70*df['buy_gt20']
+
+# A03 : 0-파워쇼핑형 1-실속형 2-신중형
+df.groupby('y')['attract'].mean()
+df.groupby('y')['realbuy'].mean()
+df.groupby('y')['short'].mean()
+df.groupby('y')['long'].mean()
+
+df_box = df[['attract','realbuy','short','long']]
+df_col = df_box.columns
+df_box['y'] = df['y']
+for i in range(4):
+   fig, ax = plt.subplots(figsize=(7,5))
+   plt.suptitle('')
+   df_box.boxplot(column=df_col[i], by='y', ax=ax, showfliers=False)
+   plt.show()
+   
+#%% Kmeans - function
+import random
+
+#df_buy_am = trans_info.groupby(['clnt_id','biz_unit']).agg({'buy_am':'mean'}).reset_index()
+#clnt_info = clnt_info.merge(df_buy_am,how="inner")
+
+def Kmeans_by_bizunit(biz_unit,n_cluster=3):
+    
+    
+    clnt_buy_info = clnt_info[~pd.isnull(clnt_info.buy_num)]
+    clnt_buy = clnt_buy_info [clnt_buy_info.biz_unit == biz_unit]
+    
+    # continuos variable for kmeans
+    X_raw = clnt_buy[['clnt_id','tot_pag_view_ct','tot_sess_hr_v','sech_kwd','login_num','buy_time','buy_num','days_le3','days_le10','days_gt10','buy_le7','buy_le20','buy_gt20']]
+    X_col = X_raw.columns[1:]
+    X_raw = X_raw.dropna()
+    X_clnt = X_raw['clnt_id']
+    X_raw = X_raw.drop('clnt_id',axis=1)
+    # In general, it's a good idea to scale the data 
+    scaler = StandardScaler()
+    scaler.fit(X_raw)
+    X=scaler.transform(X_raw)    
+    # kmeans
+    random.seed(1)
+    kmeans = KMeans(n_clusters=n_cluster)
+    kmeans.fit(X)
+    y_kmeans = kmeans.predict(X)
+    
+    X_df = pd.DataFrame(X_raw)
+    X_df.columns = X_col
+    X_df['y'] = y_kmeans
+    X_df['clnt_id'] = X_clnt
+    
+    X_df = X_df.merge(clnt_buy[['clnt_id','dvc_ctg_nm','member','clnt_age']],how="left")
+    
+    return(X_df)
+
+#%% New Index - function
+def create_newIndex(df) :
+    # 관심 지수
+    df['attract'] = 30*df['tot_pag_view_ct'] + 30*df['tot_sess_hr_v'] + 20*df['sech_kwd'] 
+    # 실질 접속/구매 지수
+    df['realbuy'] = 20*df['login_num'] + 100*df['buy_num'] +  100*(1/(df['buy_time']+1))
+    # 단기 접속/구매 지수
+    df['short'] = 100*df['days_le3'] + 100*df['days_le10'] + 50*df['buy_le7'] + 50*df['buy_le20']
+    # 장기 접속/구매 지수
+    df['long'] = 30*df['days_le10'] + 70*df['days_gt10'] + 30*df['buy_le20'] + 70*df['buy_gt20']
+    
+    df_new = df[['y','attract','realbuy','short','long','clnt_id','dvc_ctg_nm','member','clnt_age']]
+    return(df_new)
+
+#%%
+df_A01 = Kmeans_by_bizunit(biz_unit="A01")
+df_A02 = Kmeans_by_bizunit(biz_unit="A02")    
+df_A03 = Kmeans_by_bizunit(biz_unit="A03")    
+
+# -- plot
+X_df = df_A02
+X_col = X_df.columns
+fig, axes = plt.subplots(nrows=4, ncols=3,figsize=(15,10))
+plt.suptitle('')
+X_df.boxplot(column=X_col[0], by='y',showfliers=False, ax=axes[0,0])
+X_df.boxplot(column=X_col[1], by='y',showfliers=False, ax=axes[0,1])
+X_df.boxplot(column=X_col[2], by='y',showfliers=False, ax=axes[0,2])
+X_df.boxplot(column=X_col[3], by='y',showfliers=False, ax=axes[1,0])
+X_df.boxplot(column=X_col[4], by='y',showfliers=False, ax=axes[1,1])
+X_df.boxplot(column=X_col[5], by='y',showfliers=False, ax=axes[1,2])
+X_df.boxplot(column=X_col[6], by='y',showfliers=False, ax=axes[2,0])
+X_df.boxplot(column=X_col[7], by='y',showfliers=False, ax=axes[2,1])
+X_df.boxplot(column=X_col[8], by='y',showfliers=False, ax=axes[2,2])
+X_df.boxplot(column=X_col[9], by='y',showfliers=False, ax=axes[3,0])
+X_df.boxplot(column=X_col[10], by='y',showfliers=False, ax=axes[3,1])
+X_df.boxplot(column=X_col[11], by='y',showfliers=False, ax=axes[3,2])
+plt.show()
+
+print(df_A01.groupby('y').size()/df_A01.shape[0])
+df_A01['y'][df_A01.y==0] = "단발출현형"
+df_A01['y'][df_A01.y==1] = "실속추구형"
+df_A01['y'][df_A01.y==2] = "파워쇼핑형"
+print(df_A02.groupby('y').size()/df_A02.shape[0])
+df_A02['y'][df_A02.y==0] = "실속추구형"
+df_A02['y'][df_A02.y==1] = "단발출현형"
+df_A02['y'][df_A02.y==2] = "파워쇼핑형"
+print(df_A03.groupby('y').size()/df_A03.shape[0])
+df_A03['y'][df_A03.y==0] = "실속추구형"
+df_A03['y'][df_A03.y==1] = "단발출현형"
+df_A03['y'][df_A03.y==2] = "파워쇼핑형"
+
+new_A01 = create_newIndex(df_A01)
+new_A01.groupby('y')['attract'].mean()
+new_A01.groupby('y')['realbuy'].mean()
+new_A01.groupby('y')['short'].mean()
+new_A01.groupby('y')['long'].mean()
+new_A02 = create_newIndex(df_A02)
+new_A02.groupby('y')['attract'].mean()
+new_A02.groupby('y')['realbuy'].mean()
+new_A02.groupby('y')['short'].mean()
+new_A02.groupby('y')['long'].mean()
+new_A03 = create_newIndex(df_A03)
+new_A03.groupby('y')['attract'].mean()
+new_A03.groupby('y')['realbuy'].mean()
+new_A03.groupby('y')['short'].mean()
+new_A03.groupby('y')['long'].mean()
+
+df = new_A03
+df_box = df[['attract','realbuy','short','long']]
+df_col = df_box.columns
+df_box['y'] = df['y']
+
+fig, axes = plt.subplots(nrows=2, ncols=2,figsize=(15,10))
+plt.suptitle('')
+df_box.boxplot(column=df_col[0], by='y',showfliers=False, ax=axes[0,0])
+df_box.boxplot(column=df_col[1], by='y',showfliers=False, ax=axes[0,1])
+df_box.boxplot(column=df_col[2], by='y',showfliers=False, ax=axes[1,0])
+df_box.boxplot(column=df_col[3], by='y',showfliers=False, ax=axes[1,1])
+
+
+# -- segmentation
+
+new_A01.groupby(['dvc_ctg_nm']).y.value_counts(normalize=True).mul(100)
+new_A02.groupby(['dvc_ctg_nm']).y.value_counts(normalize=True).mul(100)
+new_A03.groupby(['dvc_ctg_nm']).y.value_counts(normalize=True).mul(100)
+
+new_A01.groupby(['member']).y.value_counts(normalize=True).mul(100)
+new_A02.groupby(['member']).y.value_counts(normalize=True).mul(100)
+new_A03.groupby(['member']).y.value_counts(normalize=True).mul(100)
+
+new_A01.groupby(['clnt_age']).y.value_counts(normalize=True).mul(100)
+new_A02.groupby(['clnt_age']).y.value_counts(normalize=True).mul(100)
+new_A03.groupby(['clnt_age']).y.value_counts(normalize=True).mul(100)
+
+new_A01.groupby(['member','dvc_ctg_nm']).y.value_counts(normalize=True).mul(100) 
+new_A02.groupby(['member','dvc_ctg_nm']).y.value_counts(normalize=True).mul(100)
+new_A03.groupby(['member','dvc_ctg_nm']).y.value_counts(normalize=True).mul(100) 
+
+new_A01.groupby(['clnt_age']).dvc_ctg_nm.value_counts(normalize=True).mul(100)
+new_A02.groupby(['clnt_age']).dvc_ctg_nm.value_counts(normalize=True).mul(100)
+new_A03.groupby(['clnt_age']).dvc_ctg_nm.value_counts(normalize=True).mul(100)
